@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:layout_height="wrap_content"    
+    >
+    <ImageButton
+        android:id="@+id/menu_cam"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:src="@drawable/ic_menu_gallery"
+        android:layout_marginRight="20dp"
+        android:padding="30dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:background="@color/mtrl_btn_transparent_bg_color"
+        
+       />
+
+    <ImageButton
+        android:id="@+id/menu_gallery"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_menu_camera"
+        android:layout_weight="1"
+        android:layout_marginRight="20dp"
+        android:padding="30dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:background="@color/mtrl_btn_transparent_bg_color"/>
+
+    <ImageButton
+        android:id="@+id/menu_draw"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_menu_send" 
+        android:layout_weight="1"
+        android:padding="30dp"
+        android:adjustViewBounds="true"
+        android:scaleType="centerInside"
+        android:background="@color/mtrl_btn_transparent_bg_color"/>
+</LinearLayout>

@@ -12,6 +12,8 @@ using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Snackbar;
 using Android.Content;
+using Android.Widget;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace NEA
 {
@@ -27,7 +29,13 @@ namespace NEA
             SetSupportActionBar(toolbar);
 
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
-            fab.Click += FabOnClick;
+            fab.Click += (s, arg) =>
+            {
+                View view = LayoutInflater.Inflate(Resource.Layout.choice_menu, null);
+                PopupWindow popupWindow = new PopupWindow(view, LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent, true);
+                popupWindow.ShowAtLocation(view, GravityFlags.Center, 0, 0);
+            };
+
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -57,34 +65,17 @@ namespace NEA
             return true;
         }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            int id = item.ItemId;
-            if (id == Resource.Id.action_settings)
-            {
-                return true;
-            }
-
-            return base.OnOptionsItemSelected(item);
-        }
-
-        private void FabOnClick(object sender, EventArgs eventArgs)
-        {
-            View view = (View) sender;
-            Snackbar.Make(view, "Replace with your own action", Snackbar.LengthLong)
-                .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
-        }
 
         public bool OnNavigationItemSelected(IMenuItem item)
         {
             int id = item.ItemId;
 
-            if (id == Resource.Id.nav_camera)
+            if (id == Resource.Id.nav_profile)
             {
                 var Profile = new Intent(this, typeof(ProfileActivity));
                 StartActivity(Profile);
             }
-            else if (id == Resource.Id.nav_gallery)
+            else if (id == Resource.Id.nav_pairings)
             {
                 var Pairings = new Intent(this, typeof(PairingActivity));
                 StartActivity(Pairings);
