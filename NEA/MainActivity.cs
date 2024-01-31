@@ -34,6 +34,10 @@ namespace NEA
                 View view = LayoutInflater.Inflate(Resource.Layout.choice_menu, null);
                 PopupWindow popupWindow = new PopupWindow(view, LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent, true);
                 popupWindow.ShowAtLocation(view, GravityFlags.Center, 0, 725);
+
+                ImageButton menu_cam = FindViewById<ImageButton>(Resource.Id.menu_cam);
+                ImageButton menu_gallery = FindViewById<ImageButton>(Resource.Id.menu_gallery);
+                ImageButton menu_draw = FindViewById<ImageButton>(Resource.Id.menu_draw);
             };
 
 
