@@ -3395,13 +3395,16 @@ namespace NEA
 			public const int notify_panel_notification_icon_bg = 2131165315;
 			
 			// aapt resource value: 0x7F070084
-			public const int side_nav_bar = 2131165316;
+			public const int round_button = 2131165316;
 			
 			// aapt resource value: 0x7F070085
-			public const int tooltip_frame_dark = 2131165317;
+			public const int side_nav_bar = 2131165317;
 			
 			// aapt resource value: 0x7F070086
-			public const int tooltip_frame_light = 2131165318;
+			public const int tooltip_frame_dark = 2131165318;
+			
+			// aapt resource value: 0x7F070087
+			public const int tooltip_frame_light = 2131165319;
 			
 			static Drawable()
 			{

@@ -16,10 +16,10 @@
         android:layout_weight="1"
         android:src="@drawable/ic_menu_gallery"
         android:layout_marginRight="20dp"
-        android:padding="30dp"
+        android:padding="24dp"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:background="@color/mtrl_btn_transparent_bg_color"
+        android:background="@drawable/round_button"
         
        />
 
@@ -30,10 +30,10 @@
         android:src="@drawable/ic_menu_camera"
         android:layout_weight="1"
         android:layout_marginRight="20dp"
-        android:padding="30dp"
+        android:padding="24dp"
         android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:background="@color/mtrl_btn_transparent_bg_color"/>
+        android:scaleType="centerInside"
+        android:background="@drawable/round_button"/>
 
     <ImageButton
         android:id="@+id/menu_draw"
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_menu_send" 
         android:layout_weight="1"
-        android:padding="30dp"
-        android:scaleType="fitCenter"
-        android:background="@color/mtrl_btn_transparent_bg_color"/>
+        android:padding="24dp"
+        android:scaleType="centerInside"
+        android:background="@drawable/round_button"/>
 </LinearLayout>

@@ -33,7 +33,7 @@ namespace NEA
             {
                 View view = LayoutInflater.Inflate(Resource.Layout.choice_menu, null);
                 PopupWindow popupWindow = new PopupWindow(view, LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent, true);
-                popupWindow.ShowAtLocation(view, GravityFlags.Center, 0, 750);
+                popupWindow.ShowAtLocation(view, GravityFlags.Center, 0, 725);
             };
 
 
