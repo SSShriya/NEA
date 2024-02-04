@@ -20,6 +20,11 @@ using Plugin.Media;
 using System.Drawing;
 using Android.Graphics;
 using Bitmap = Android.Graphics.Bitmap;
+using Java.Lang;
+using AlertDialog = Android.App.AlertDialog;
+using System.Threading.Tasks;
+using Plugin.Media.Abstractions;
+using Android.Icu.Text;
 
 namespace NEA
 {
@@ -45,25 +50,27 @@ namespace NEA
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += (s, arg) =>
             {
-                View view = LayoutInflater.Inflate(Resource.Layout.choice_menu, null);
+                View view = LayoutInflater.Inflate(Resource.Layout.choice_menu, null, true);
                 PopupWindow popupWindow = new PopupWindow(view, LinearLayout.LayoutParams.WrapContent, LinearLayout.LayoutParams.WrapContent, true);
                 popupWindow.ShowAtLocation(view, GravityFlags.Center, 0, 725);
 
-                ImageButton menu_cam = FindViewById<ImageButton>(Resource.Id.menu_cam);
-                if (menu_cam != null)
-                {
-                    menu_cam.Click += menu_camClick;
-                }
+                //Camera click
+                ImageButton menu_cam = view.FindViewById<ImageButton>(Resource.Id.menu_cam);
+                menu_cam.Click += Menu_CamClick;
+                menu_cam.Click += (sender,e) => popupWindow.Dismiss();
+
+                //Gallery click
+                ImageButton menu_gallery = view.FindViewById<ImageButton>(Resource.Id.menu_gallery);
+                menu_gallery.Click += (sender, e) => popupWindow.Dismiss();
+
+                //Drawing click
+                ImageButton menu_draw = view.FindViewById<ImageButton>(Resource.Id.menu_draw);
+                menu_draw.Click += (sender, e) => popupWindow.Dismiss();
+
+
             };
-
-            
-            ImageButton menu_gallery = FindViewById<ImageButton>(Resource.Id.menu_gallery);
-            ImageButton menu_draw = FindViewById<ImageButton>(Resource.Id.menu_draw);
-
             
             RequestPermissions(permissionGroup, 0);
-
-
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
@@ -73,6 +80,7 @@ namespace NEA
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
         }
+
 
         public override void OnBackPressed()
         {
@@ -123,38 +131,38 @@ namespace NEA
         }
         
         //Camera Capture
-        public void menu_camClick(object sender, EventArgs e)
-        {
-            TakePhoto();
-        }
-    
-        async void TakePhoto()
+        async void Menu_CamClick(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
 
             //To capture image and set attributes of the image (size, compression..)
-            var file = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
+            var capturedImage = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium,
                 CompressionQuality = 40
             }
             ) ;
 
-            //if null
-
-            if(file == null)
+            if (capturedImage == null)
             {
                 return;
             }
 
             //Convert file to byte array
-            byte[] imageArray = System.IO.File.ReadAllBytes(file.Path);
+            byte[] imageArray = System.IO.File.ReadAllBytes(capturedImage.Path);
             Bitmap bitmap = BitmapFactory.DecodeByteArray(imageArray, 0, imageArray.Length);
 
             //Create temporary imageview
             ImageView imageView = new ImageView(this);
             imageView.SetImageBitmap(bitmap);
+
+            //Add it to layout
+            DrawerLayout layout = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
+            layout.AddView(imageView);
+
         }
+
+        //Gallery 
     }
 }
 
