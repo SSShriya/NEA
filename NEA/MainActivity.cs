@@ -56,16 +56,23 @@ namespace NEA
 
                 //Camera click
                 ImageButton menu_cam = view.FindViewById<ImageButton>(Resource.Id.menu_cam);
-                menu_cam.Click += Menu_CamClick;
+                
+                menu_cam.Click += launchCamera;
                 menu_cam.Click += (sender,e) => popupWindow.Dismiss();
 
                 //Gallery click
                 ImageButton menu_gallery = view.FindViewById<ImageButton>(Resource.Id.menu_gallery);
+                menu_gallery.Click += launchGallery;
                 menu_gallery.Click += (sender, e) => popupWindow.Dismiss();
 
                 //Drawing click
                 ImageButton menu_draw = view.FindViewById<ImageButton>(Resource.Id.menu_draw);
-                menu_draw.Click += (sender, e) => popupWindow.Dismiss();
+                menu_draw.Click += (sender, e) =>
+                {
+                    popupWindow.Dismiss();
+                    var Canvas = new Intent(this, typeof(CanvasActivity));
+                    StartActivity(Canvas);
+                };
 
 
             };
@@ -131,15 +138,21 @@ namespace NEA
         }
         
         //Camera Capture
-        async void Menu_CamClick(object sender, EventArgs e)
+        async void launchCamera(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
+
+            if(CrossMedia.Current.IsCameraAvailable == false || CrossMedia.Current.IsTakePhotoSupported == false)
+            {
+                return;
+            }
 
             //To capture image and set attributes of the image (size, compression..)
             var capturedImage = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
             {
                 PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium,
-                CompressionQuality = 40
+                CompressionQuality = 40,
+                AllowCropping = true
             }
             ) ;
 
@@ -150,6 +163,41 @@ namespace NEA
 
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(capturedImage.Path);
+            imageSelected(imageArray);
+        }
+
+        //Gallery 
+        async void launchGallery(object sender, EventArgs e)
+        {
+            await CrossMedia.Current.Initialize();
+
+            if (CrossMedia.Current.IsPickPhotoSupported == false)
+            {
+                return;
+            }
+
+            var chosenImage = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
+            {
+                PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium,
+                CompressionQuality = 40
+                
+            });
+
+            if (chosenImage == null)
+            {
+                return;
+            }
+
+            //Convert file to byte array
+            byte[] imageArray = System.IO.File.ReadAllBytes(chosenImage.Path);
+            imageSelected(imageArray);
+        }
+
+        //Handle image
+
+        public void imageSelected(byte[] imageArray)
+        {
+            //Create bitmap
             Bitmap bitmap = BitmapFactory.DecodeByteArray(imageArray, 0, imageArray.Length);
 
             //Create temporary imageview
@@ -159,10 +207,8 @@ namespace NEA
             //Add it to layout
             DrawerLayout layout = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             layout.AddView(imageView);
-
         }
 
-        //Gallery 
     }
 }
 

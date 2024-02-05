@@ -59,6 +59,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CanvasActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PairingActivity.cs" />
     <Compile Include="ProfileActivity.cs" />
