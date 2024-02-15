@@ -29,17 +29,16 @@ namespace NEA
             SetContentView(Resource.Layout.activity_pairings);
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
-
-            Button button = FindViewById<Button>(Resource.Id.temp_button);
-            button.Click += temp_buttonOnClick;
+            SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+            SupportActionBar.SetHomeButtonEnabled(true);
 
         }
 
-        private void temp_buttonOnClick(object sender, EventArgs eventArgs)
+        public override bool OnOptionsItemSelected(IMenuItem item)
         {
-
             var Homepage = new Intent(this, typeof(MainActivity));
             StartActivity(Homepage);
+            return true;
         }
     }
 }

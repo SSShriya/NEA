@@ -103,11 +103,7 @@ namespace NEA
         }
 
         //Options menus
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            MenuInflater.Inflate(Resource.Menu.menu_main, menu);
-            return true;
-        }
+ 
         public bool OnNavigationItemSelected(IMenuItem item)
         {
             int id = item.ItemId;

@@ -3,6 +3,7 @@
 	<string name="home">Home</string>
 	<string name="profile">Profile</string>
 	<string name="pairings">Pairings</string>
+	<string name="canvas">Draw!</string>
 	<string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

@@ -20,14 +20,4 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <Button
-        android:text="Homescreen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
-        android:minWidth="25px"
-        android:minHeight="25px"
-        android:id="@+id/temp_button" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
