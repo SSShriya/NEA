@@ -20,14 +20,54 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
      <NEA.CanvasActivity.CanvasView
         android:id="@+id/canvasView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/canvas_border"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="50dp"
         android:layout_margin="10dp"
         />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+        <RadioGroup
+            android:layout_below="@id/canvasView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:gravity="center"
+            >
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_pen"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_pen"
+                >
+            </RadioButton>
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_eraser"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_eraser"
+                >
+            </RadioButton>
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_fill"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_fill">
+            </RadioButton>
+        </RadioGroup>
+
+    </RelativeLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
