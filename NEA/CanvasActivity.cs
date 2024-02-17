@@ -1,20 +1,13 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.Graphics;
 using AndroidX.AppCompat.App;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using System.Text;
-using static NEA.CanvasActivity;
 using Android.Util;
-using AndroidX.CoordinatorLayout.Widget;
-using Android.Database.Sqlite;
+using System;
 
 namespace NEA
 {
@@ -43,8 +36,18 @@ namespace NEA
 
             fill.Click += (sender,e)=>
                 {
-                    canvas.setFillMode();
+                    canvas.SetFillMode();
                 };
+
+            pen.Click += (sender, e) =>
+            {
+                canvas.SetPenMode();
+            };
+
+            eraser.Click += (sender, e) =>
+            {
+                canvas.SetEraserMode();
+            };
 
         }
 
@@ -61,13 +64,13 @@ namespace NEA
         {
             private Paint paint;
             private Color colour = Color.Black;
+            private Path path;
             private bool fillMode = false;
-            private bool canvasFill = false;
+            private bool touched = false;
             private bool penMode = false;
             private bool eraserMode = false;
 
-
-            //Constructor
+            //Constructors
             public CanvasView(Context context) : base(context)
             {
                 Initialise();
@@ -78,33 +81,42 @@ namespace NEA
             }
 
             private void Initialise()          
-                {
-                    paint = new Paint();
-                    paint.Color = colour;
-                    paint.StrokeWidth = 5;
-                }
+            {
+                paint = new Paint();
+                paint.StrokeWidth=5;
+                path = new Path();
+            }
+
+            //Canvas dimens
             protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
             {
                 base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
                 SetMeasuredDimension(MeasuredWidth, MeasuredWidth);
             }
 
-            public void setFillMode()
+            //Methods for which drawing tool is selected
+            public void SetFillMode()
             {
+                paint.Color = colour;
+                paint.SetStyle(Paint.Style.Fill);
                 fillMode = true;
                 penMode = false;
                 eraserMode = false;
             }
 
-            public void setPenMode()
+            public void SetPenMode()
             {
+                paint.Color = colour;
+                paint.SetStyle(Paint.Style.Stroke);
                 penMode = true;
                 fillMode = false;
                 eraserMode = false;
             }
 
-            public void setEraserMode()
+            public void SetEraserMode()
             {
+                paint.Color = Color.Transparent;
+                paint.SetStyle(Paint.Style.Stroke);
                 eraserMode = true;
                 fillMode = false;
                 penMode = false;
@@ -112,25 +124,63 @@ namespace NEA
 
             public override bool OnTouchEvent(MotionEvent e)
             {
-                if (fillMode && e.Action == MotionEventActions.Down)
+                touched = true;
+                switch(e.Action)
                 {
-                    CanvasView canvas = FindViewById<CanvasView>(Resource.Id.canvasView);
-                    canvasFill = true;
-                    canvas.Invalidate();
-                    return true;
+                    case MotionEventActions.Down:
+                        if(penMode || eraserMode)
+                        {
+                            path.MoveTo(e.GetX(), e.GetY());   
+                        }
+                        Invalidate();
+                        return true;
+
+                    case MotionEventActions.Move:
+                        if (penMode || eraserMode)
+                        {
+                            path.LineTo(e.GetX(), e.GetY());
+                        }
+                        Invalidate();
+                        return true;
+
+                    case MotionEventActions.Up:
+                        if (penMode || eraserMode)
+                        {
+                            path.LineTo(e.GetX(), e.GetY());
+                        }
+                        Invalidate();
+                        return true;
                 }
                 return base.OnTouchEvent(e);
             }
+
 
             //Method to draw something
             protected override void OnDraw(Canvas canvas)
             {
                 base.OnDraw(canvas);
 
-                if(canvasFill)
+                if (touched)
                 {
-                    canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
-                    canvasFill = false;
+                    if (fillMode)
+                    {
+                        canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
+                    }
+                    if (penMode)
+                    {
+                        if (path != null)
+                        {
+                            canvas.DrawPath(path, paint);
+                        }
+                    }
+                    if (eraserMode)
+                    {
+                        if (path != null)
+                        {
+                            canvas.DrawPath(path, paint);
+                        }
+                    }
+                    touched = false;
                 }
 
             }
