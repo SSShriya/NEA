@@ -8,6 +8,11 @@ using AndroidX.AppCompat.App;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 using Android.Util;
 using System;
+using Android.Test.Suitebuilder.Annotation;
+using System.Collections;
+using Android.Gestures;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace NEA
 {
@@ -58,6 +63,19 @@ namespace NEA
             return true;
         }
 
+        //Stroke Class
+        public class Stroke
+        {
+            public Path path;
+            public Color colour;
+            public float strokeWidth;
+            public Stroke(Color newColour, float newStrokeWidth, Path newPath)
+            {
+                colour = newColour;
+                strokeWidth = newStrokeWidth;
+                path = newPath;
+            }
+        }
 
         //Canvas Class
         public class CanvasView : View 
@@ -69,6 +87,8 @@ namespace NEA
             private bool touched = false;
             private bool penMode = false;
             private bool eraserMode = false;
+            private List<Stroke> paths = new List<Stroke>();
+
 
             //Constructors
             public CanvasView(Context context) : base(context)
@@ -125,32 +145,44 @@ namespace NEA
             public override bool OnTouchEvent(MotionEvent e)
             {
                 touched = true;
-                switch(e.Action)
+                
+                switch (e.Action)
                 {
                     case MotionEventActions.Down:
+                        if(fillMode)
+                        {
+                            Invalidate();
+                        }
                         if(penMode || eraserMode)
                         {
-                            path.MoveTo(e.GetX(), e.GetY());   
+                            path.MoveTo(e.GetX(), e.GetY());
+                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
+                            paths.Add(stroke);
+                            Invalidate();
                         }
-                        Invalidate();
                         return true;
 
                     case MotionEventActions.Move:
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
+                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
+                            paths.Add(stroke);
+                            Invalidate();
                         }
-                        Invalidate();
                         return true;
 
                     case MotionEventActions.Up:
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
+                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
+                            paths.Add(stroke);
+                            Invalidate();
                         }
-                        Invalidate();
                         return true;
                 }
+                
                 return base.OnTouchEvent(e);
             }
 
@@ -158,6 +190,15 @@ namespace NEA
             //Method to draw something
             protected override void OnDraw(Canvas canvas)
             {
+                canvas.Save();
+                foreach(Stroke stroke in paths)
+                {
+                    paint.Color = stroke.colour;
+                    paint.StrokeWidth = stroke.strokeWidth;
+                    canvas.DrawPath(stroke.path, paint);
+                }
+                //canvas.DrawBitmap(bitmap, 0, 0, paint);
+                canvas.Restore();
                 base.OnDraw(canvas);
 
                 if (touched)
