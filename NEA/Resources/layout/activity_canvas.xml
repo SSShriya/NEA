@@ -33,6 +33,10 @@
         android:layout_margin="10dp"
         />
 
+        
+
+
+
         <RadioGroup
             android:layout_below="@id/canvasView"
             android:layout_width="match_parent"
@@ -40,6 +44,7 @@
             android:orientation="horizontal"
             android:padding="10dp"
             android:gravity="center"
+            android:id="@+id/radioGroup1"
             >
             <RadioButton
                 android:layout_width="0dp"
@@ -67,7 +72,29 @@
                 android:gravity="center_horizontal"
                 android:id="@+id/tools_fill">
             </RadioButton>
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_fill"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_thickness">
+            </RadioButton>
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_fill"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_colour">
+            </RadioButton>
         </RadioGroup>
+        <com.google.android.material.slider.RangeSlider
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/thickness_slider"
+            android:visibility="gone"
+            android:layout_below="@id/radioGroup1"/>
 
     </RelativeLayout>
-    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

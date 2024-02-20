@@ -1,6 +1,9 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.OS;
+using Android;
+using Java.Lang;
+using AndroidX.Core.View;
 using Android.Views;
 using Android.Widget;
 using Android.Graphics;
@@ -13,6 +16,13 @@ using System.Collections;
 using Android.Gestures;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using AndroidX.Core.Graphics;
+using Android.Runtime;
+using System.Drawing;
+using Color = Android.Graphics.Color;
+using Bitmap = Android.Graphics.Bitmap;
+using Google.Android.Material.Slider;
+using Javax.Security.Auth;
 
 namespace NEA
 {
@@ -38,6 +48,11 @@ namespace NEA
             RadioButton pen = FindViewById<RadioButton>(Resource.Id.tools_pen);
             RadioButton eraser = FindViewById<RadioButton>(Resource.Id.tools_eraser);
             RadioButton fill = FindViewById<RadioButton>(Resource.Id.tools_fill);
+            RadioButton thickness = FindViewById<RadioButton>(Resource.Id.tools_thickness);
+            RadioButton colour = FindViewById<RadioButton>(Resource.Id.tools_colour);
+
+            //Rangeslider
+            RangeSlider rangeSlider;
 
             fill.Click += (sender,e)=>
                 {
@@ -54,7 +69,20 @@ namespace NEA
                 canvas.SetEraserMode();
             };
 
-        }
+            thickness.Click += (sender, e) =>
+            {
+                rangeSlider = FindViewById<RangeSlider>(Resource.Id.thickness_slider);
+                if (rangeSlider.Visibility == ViewStates.Gone)
+                {
+                    rangeSlider.Visibility = ViewStates.Visible;
+                }
+                else
+                {
+                    rangeSlider.Visibility = ViewStates.Gone;
+                }
+            };
+    
+}
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
@@ -66,14 +94,15 @@ namespace NEA
         //Stroke Class
         public class Stroke
         {
-            public Path path;
-            public Color colour;
-            public float strokeWidth;
-            public Stroke(Color newColour, float newStrokeWidth, Path newPath)
+            public Path strokepath;
+            public Paint strokepaint;
+            public Stroke(Color newColour, float newStrokeWidth, Path newPath, Paint.Style style)
             {
-                colour = newColour;
-                strokeWidth = newStrokeWidth;
-                path = newPath;
+                strokepath = newPath;
+                strokepaint = new Paint();
+                strokepaint.Color = newColour;
+                strokepaint.StrokeWidth= newStrokeWidth;
+                strokepaint.SetStyle(style);
             }
         }
 
@@ -81,8 +110,10 @@ namespace NEA
         public class CanvasView : View 
         {
             private Paint paint;
-            private Color colour = Color.Black;
+            private Color colour;
             private Path path;
+            private Canvas canvas;
+            private Bitmap bitmap;
             private bool fillMode = false;
             private bool touched = false;
             private bool penMode = false;
@@ -100,11 +131,19 @@ namespace NEA
                 Initialise();
             }
 
+            public CanvasView(IntPtr handle, JniHandleOwnership transfer) : base(handle, transfer)
+            {
+                Initialise();
+            }
+
             private void Initialise()          
             {
                 paint = new Paint();
                 paint.StrokeWidth=5;
+                paint.AntiAlias = true;
                 path = new Path();
+
+
             }
 
             //Canvas dimens
@@ -112,6 +151,9 @@ namespace NEA
             {
                 base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
                 SetMeasuredDimension(MeasuredWidth, MeasuredWidth);
+                bitmap = Bitmap.CreateBitmap(MeasuredWidth, MeasuredHeight, Bitmap.Config.Argb8888);
+                canvas = new Canvas(bitmap);
+
             }
 
             //Methods for which drawing tool is selected
@@ -126,6 +168,7 @@ namespace NEA
 
             public void SetPenMode()
             {
+                colour = Color.Black;
                 paint.Color = colour;
                 paint.SetStyle(Paint.Style.Stroke);
                 penMode = true;
@@ -135,7 +178,8 @@ namespace NEA
 
             public void SetEraserMode()
             {
-                paint.Color = Color.Transparent;
+                colour = Color.White;
+                paint.Color = colour;
                 paint.SetStyle(Paint.Style.Stroke);
                 eraserMode = true;
                 fillMode = false;
@@ -145,19 +189,21 @@ namespace NEA
             public override bool OnTouchEvent(MotionEvent e)
             {
                 touched = true;
-                
                 switch (e.Action)
                 {
                     case MotionEventActions.Down:
-                        if(fillMode)
+                        path = new Path();
+                        Stroke stroke = new Stroke(paint.Color, paint.StrokeWidth, path, paint.GetStyle());
+                        paths.Add(stroke);
+
+                        if (fillMode)
                         {
+                            path.AddRect(0, 0, Width, Height, Path.Direction.Cw);
                             Invalidate();
                         }
                         if(penMode || eraserMode)
                         {
                             path.MoveTo(e.GetX(), e.GetY());
-                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
-                            paths.Add(stroke);
                             Invalidate();
                         }
                         return true;
@@ -166,8 +212,6 @@ namespace NEA
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
-                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
-                            paths.Add(stroke);
                             Invalidate();
                         }
                         return true;
@@ -176,8 +220,6 @@ namespace NEA
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
-                            Stroke stroke = new Stroke(colour, paint.StrokeWidth, path);
-                            paths.Add(stroke);
                             Invalidate();
                         }
                         return true;
@@ -190,16 +232,19 @@ namespace NEA
             //Method to draw something
             protected override void OnDraw(Canvas canvas)
             {
-                canvas.Save();
-                foreach(Stroke stroke in paths)
-                {
-                    paint.Color = stroke.colour;
-                    paint.StrokeWidth = stroke.strokeWidth;
-                    canvas.DrawPath(stroke.path, paint);
-                }
-                //canvas.DrawBitmap(bitmap, 0, 0, paint);
-                canvas.Restore();
                 base.OnDraw(canvas);
+
+                canvas.Save();
+                foreach (Stroke stroke in paths)
+                {
+                    if (stroke.strokepaint != null && stroke.strokepath != null)
+                    {
+                        canvas.DrawPath(stroke.strokepath, stroke.strokepaint);
+                    }
+                }
+                canvas.DrawBitmap(bitmap, 0, 0, paint);
+                canvas.Restore();
+               
 
                 if (touched)
                 {
@@ -207,14 +252,7 @@ namespace NEA
                     {
                         canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
                     }
-                    if (penMode)
-                    {
-                        if (path != null)
-                        {
-                            canvas.DrawPath(path, paint);
-                        }
-                    }
-                    if (eraserMode)
+                    if (penMode || eraserMode)
                     {
                         if (path != null)
                         {
