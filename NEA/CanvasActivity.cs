@@ -23,12 +23,26 @@ using Color = Android.Graphics.Color;
 using Bitmap = Android.Graphics.Bitmap;
 using Google.Android.Material.Slider;
 using Javax.Security.Auth;
+using System.Linq;
+using Yuku.AmbilWarna;
+using AndroidX.Core.Content;
+using Java.Security;
+using Math = Java.Lang.Math;
+using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
+using static Xamarin.Essentials.Platform;
+using Intent = Android.Content.Intent;
+using System.IO;
+using Path = Android.Graphics.Path;
+using AndroidX.DrawerLayout.Widget;
 
 namespace NEA
 {
     [Activity(Label = "@string/canvas", Theme = "@style/AppTheme.NoActionBar")]
-    public class CanvasActivity : AppCompatActivity
+    public class CanvasActivity : AppCompatActivity, IBaseOnChangeListener
     {
+        private int color = unchecked((int)0xffffff00);
+        private Slider slider;
+        private RadioButton current;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -43,6 +57,9 @@ namespace NEA
 
             //Canvas
             CanvasView canvas = FindViewById<CanvasView>(Resource.Id.canvasView);
+            canvas.OutlineProvider = ViewOutlineProvider.Background;
+            canvas.ClipToOutline = true;
+
 
             //Radio buttons
             RadioButton pen = FindViewById<RadioButton>(Resource.Id.tools_pen);
@@ -50,9 +67,16 @@ namespace NEA
             RadioButton fill = FindViewById<RadioButton>(Resource.Id.tools_fill);
             RadioButton thickness = FindViewById<RadioButton>(Resource.Id.tools_thickness);
             RadioButton colour = FindViewById<RadioButton>(Resource.Id.tools_colour);
+            RadioButton undo = FindViewById<RadioButton>(Resource.Id.tools_undo);
 
-            //Rangeslider
-            RangeSlider rangeSlider;
+            //Slider            
+            Slider slider = FindViewById<Slider>(Resource.Id.thickness_slider);
+            slider.ValueFrom= 0;
+            slider.ValueTo = 100;
+            slider.StepSize = 2;
+
+            //Completed button
+            Button complete = FindViewById<Button>(Resource.Id.btn_complete);
 
             fill.Click += (sender,e)=>
                 {
@@ -61,28 +85,87 @@ namespace NEA
 
             pen.Click += (sender, e) =>
             {
+                current = pen;
                 canvas.SetPenMode();
             };
 
             eraser.Click += (sender, e) =>
             {
+                current = eraser;
                 canvas.SetEraserMode();
             };
 
             thickness.Click += (sender, e) =>
             {
-                rangeSlider = FindViewById<RangeSlider>(Resource.Id.thickness_slider);
-                if (rangeSlider.Visibility == ViewStates.Gone)
+                if (slider.Visibility == ViewStates.Gone)
                 {
-                    rangeSlider.Visibility = ViewStates.Visible;
+                    slider.Visibility = ViewStates.Visible;
+                    var method = Class.ForName("com.google.android.material.slider.BaseSlider").GetDeclaredMethods().FirstOrDefault(x => x.Name == "addOnChangeListener");
+                    method?.Invoke(slider, this);
                 }
                 else
                 {
-                    rangeSlider.Visibility = ViewStates.Gone;
+                    slider.Visibility = ViewStates.Gone;
+                    current.PerformClick();
                 }
             };
-    
-}
+            
+            colour.Click += (sender, e) =>
+            {
+                OpenDialog(true);
+            };
+
+            undo.Click += (sender, e) =>
+            {
+                canvas.Undo();
+            };
+
+            complete.Click += (sender, e) =>
+            {
+                Bitmap image = canvas.Save();
+                ImageSelected(image);
+                /*MemoryStream stream = new MemoryStream();
+                image.Compress(Bitmap.CompressFormat.Png, 100, stream);
+                byte[] byteArray = stream.ToArray();
+                Intent intent = new Intent(this, typeof(MainActivity));
+                intent.PutExtra("image", byteArray);
+                SetResult(Result.Ok, intent);
+                Finish();*/
+            };
+
+        }
+
+        public void ImageSelected(Bitmap imageArray)
+        {
+
+            //Create temporary imageview
+            ImageView imageView = new ImageView(this);
+            imageView.SetImageBitmap(imageArray);
+
+            //Add it to layout
+            RelativeLayout layout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
+            layout.AddView(imageView);
+        }
+
+        private void OpenDialog(bool supportAlpha)
+        {
+            CanvasView canvas = FindViewById<CanvasView>(Resource.Id.canvasView);        
+            var dialog = new AmbilWarnaDialog(this, color, supportAlpha);
+            dialog.Ok += (sender, e) =>
+            {
+                canvas.SetColour(e.Color.ToString("x8"));
+            };
+            dialog.Show();
+            current.PerformClick();
+        }
+
+        public void OnValueChange(Java.Lang.Object p0, float p1, bool p2)
+        {
+            CanvasView canvas = FindViewById<CanvasView>(Resource.Id.canvasView);
+            canvas.SetThickness(p1);
+            current.PerformClick();
+        }
+
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
@@ -102,6 +185,9 @@ namespace NEA
                 strokepaint = new Paint();
                 strokepaint.Color = newColour;
                 strokepaint.StrokeWidth= newStrokeWidth;
+                strokepaint.StrokeCap = Paint.Cap.Round;
+                strokepaint.StrokeJoin = Paint.Join.Round;
+                strokepaint.Dither = true;
                 strokepaint.SetStyle(style);
             }
         }
@@ -110,8 +196,8 @@ namespace NEA
         public class CanvasView : View 
         {
             private Paint paint;
-            private Color colour;
             private Path path;
+            private Color color;
             private Canvas canvas;
             private Bitmap bitmap;
             private bool fillMode = false;
@@ -131,19 +217,17 @@ namespace NEA
                 Initialise();
             }
 
-            public CanvasView(IntPtr handle, JniHandleOwnership transfer) : base(handle, transfer)
-            {
-                Initialise();
-            }
-
             private void Initialise()          
             {
                 paint = new Paint();
-                paint.StrokeWidth=5;
+                paint.StrokeWidth = 5;
                 paint.AntiAlias = true;
+                paint.Color = Color.Black;
+                color = paint.Color;
                 path = new Path();
-
-
+                paint.Dither = true;
+                paint.StrokeCap = Paint.Cap.Round;
+                paint.StrokeJoin = Paint.Join.Round;      
             }
 
             //Canvas dimens
@@ -153,13 +237,12 @@ namespace NEA
                 SetMeasuredDimension(MeasuredWidth, MeasuredWidth);
                 bitmap = Bitmap.CreateBitmap(MeasuredWidth, MeasuredHeight, Bitmap.Config.Argb8888);
                 canvas = new Canvas(bitmap);
-
             }
 
             //Methods for which drawing tool is selected
             public void SetFillMode()
             {
-                paint.Color = colour;
+                paint.Color = color;
                 paint.SetStyle(Paint.Style.Fill);
                 fillMode = true;
                 penMode = false;
@@ -168,8 +251,7 @@ namespace NEA
 
             public void SetPenMode()
             {
-                colour = Color.Black;
-                paint.Color = colour;
+                paint.Color = color;
                 paint.SetStyle(Paint.Style.Stroke);
                 penMode = true;
                 fillMode = false;
@@ -178,14 +260,55 @@ namespace NEA
 
             public void SetEraserMode()
             {
-                colour = Color.White;
-                paint.Color = colour;
+                paint.Color = Color.White;
                 paint.SetStyle(Paint.Style.Stroke);
                 eraserMode = true;
                 fillMode = false;
                 penMode = false;
             }
 
+            //Style methods
+
+            public void SetThickness(float thickness)
+            {
+                paint.StrokeWidth = thickness;
+            }
+
+            public void SetColour(string newColour)
+            {
+                Console.WriteLine(newColour);
+                var a = newColour.Substring(0, 2);
+                var r = newColour.Substring(2, 2);
+                var g = newColour.Substring(4, 2);
+                var b = newColour.Substring(6, 2);
+                int a_int = int.Parse(a, System.Globalization.NumberStyles.HexNumber);
+                int r_int = int.Parse(r, System.Globalization.NumberStyles.HexNumber);
+                int g_int = int.Parse(g, System.Globalization.NumberStyles.HexNumber);
+                int b_int = int.Parse(b, System.Globalization.NumberStyles.HexNumber);
+
+                paint.SetARGB(a_int, r_int, g_int, b_int);
+                color = paint.Color;
+            }
+
+            //Undo
+
+            public void Undo()
+            {
+                if (paths.Count > 0)
+                {
+                    paths.RemoveAt(paths.Count - 1);
+                    Invalidate();
+                }
+            }
+
+            //Save
+            public Bitmap Save()
+            {
+                canvas.SetBitmap(bitmap);
+                return bitmap;
+            }
+
+            //Recognising path
             public override bool OnTouchEvent(MotionEvent e)
             {
                 touched = true;
@@ -193,6 +316,7 @@ namespace NEA
                 {
                     case MotionEventActions.Down:
                         path = new Path();
+                        if (eraserMode) { paint.Color = Color.White; }
                         Stroke stroke = new Stroke(paint.Color, paint.StrokeWidth, path, paint.GetStyle());
                         paths.Add(stroke);
 
@@ -212,6 +336,7 @@ namespace NEA
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
+                            if (eraserMode) { paint.Color = Color.White; }
                             Invalidate();
                         }
                         return true;
@@ -220,6 +345,7 @@ namespace NEA
                         if (penMode || eraserMode)
                         {
                             path.LineTo(e.GetX(), e.GetY());
+                            if (eraserMode) { paint.Color = Color.White; }
                             Invalidate();
                         }
                         return true;

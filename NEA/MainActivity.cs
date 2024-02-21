@@ -25,6 +25,9 @@ using AlertDialog = Android.App.AlertDialog;
 using System.Threading.Tasks;
 using Plugin.Media.Abstractions;
 using Android.Icu.Text;
+using static Xamarin.Essentials.Platform;
+using Intent = Android.Content.Intent;
+
 
 namespace NEA
 {
@@ -41,11 +44,11 @@ namespace NEA
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
-            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+            Init(this, savedInstanceState);
 
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += (s, arg) =>
@@ -57,12 +60,12 @@ namespace NEA
                 //Camera click
                 ImageButton menu_cam = view.FindViewById<ImageButton>(Resource.Id.menu_cam);
                 
-                menu_cam.Click += launchCamera;
+                menu_cam.Click += LaunchCamera;
                 menu_cam.Click += (sender,e) => popupWindow.Dismiss();
 
                 //Gallery click
                 ImageButton menu_gallery = view.FindViewById<ImageButton>(Resource.Id.menu_gallery);
-                menu_gallery.Click += launchGallery;
+                menu_gallery.Click += LaunchGallery;
                 menu_gallery.Click += (sender, e) => popupWindow.Dismiss();
 
                 //Drawing click
@@ -71,7 +74,7 @@ namespace NEA
                 {
                     popupWindow.Dismiss();
                     var Canvas = new Intent(this, typeof(CanvasActivity));
-                    StartActivity(Canvas);
+                    StartActivityForResult(Canvas, 0);
                 };
 
 
@@ -88,7 +91,17 @@ namespace NEA
             navigationView.SetNavigationItemSelectedListener(this);
         }
 
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            if (resultCode == Result.Ok)
+            {
+                byte[] byteArray = data.GetByteArrayExtra("image");
+                ImageSelected(byteArray);
+            }
+        }
 
+        [Obsolete]
         public override void OnBackPressed()
         {
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
@@ -134,7 +147,7 @@ namespace NEA
         }
         
         //Camera Capture
-        async void launchCamera(object sender, EventArgs e)
+        async void LaunchCamera(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
 
@@ -159,11 +172,11 @@ namespace NEA
 
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(capturedImage.Path);
-            imageSelected(imageArray);
+            ImageSelected(imageArray);
         }
 
         //Gallery 
-        async void launchGallery(object sender, EventArgs e)
+        async void LaunchGallery(object sender, EventArgs e)
         {
             await CrossMedia.Current.Initialize();
 
@@ -186,12 +199,12 @@ namespace NEA
 
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(chosenImage.Path);
-            imageSelected(imageArray);
+            ImageSelected(imageArray);
         }
 
         //Handle image
 
-        public void imageSelected(byte[] imageArray)
+        public void ImageSelected(byte[] imageArray)
         {
             //Create bitmap
             Bitmap bitmap = BitmapFactory.DecodeByteArray(imageArray, 0, imageArray.Length);

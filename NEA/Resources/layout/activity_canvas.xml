@@ -23,7 +23,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:id="@+id/relativeLayout1">
 
      <NEA.CanvasActivity.CanvasView
         android:id="@+id/canvasView"
@@ -76,7 +77,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:button="@drawable/ic_tools_fill"
+                android:button="@drawable/ic_tools_width"
                 android:gravity="center_horizontal"
                 android:id="@+id/tools_thickness">
             </RadioButton>
@@ -84,17 +85,35 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:button="@drawable/ic_tools_fill"
+                android:button="@drawable/ic_tools_colour"
                 android:gravity="center_horizontal"
                 android:id="@+id/tools_colour">
             </RadioButton>
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:button="@drawable/ic_tools_undo"
+                android:gravity="center_horizontal"
+                android:id="@+id/tools_undo">
+            </RadioButton>
         </RadioGroup>
-        <com.google.android.material.slider.RangeSlider
+        <com.google.android.material.slider.Slider
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/thickness_slider"
             android:visibility="gone"
             android:layout_below="@id/radioGroup1"/>
-
+        <Button
+            android:id="@+id/btn_complete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send Drawing"
+            android:backgroundTint="@color/colorAccent"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="16dp"
+            android:shadowColor="@android:color/transparent"
+            android:layout_centerHorizontal="true">
+            </Button>
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
