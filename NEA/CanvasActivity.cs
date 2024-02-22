@@ -34,14 +34,15 @@ using Intent = Android.Content.Intent;
 using System.IO;
 using Path = Android.Graphics.Path;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.Browser.Trusted;
+using Point = Android.Graphics.Point;
 
 namespace NEA
 {
     [Activity(Label = "@string/canvas", Theme = "@style/AppTheme.NoActionBar")]
     public class CanvasActivity : AppCompatActivity, IBaseOnChangeListener
     {
-        private int color = unchecked((int)0xffffff00);
-        private Slider slider;
+        private readonly int color = unchecked((int)0xffffff00);
         private RadioButton current;
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -80,6 +81,7 @@ namespace NEA
 
             fill.Click += (sender,e)=>
                 {
+                    current = fill;
                     canvas.SetFillMode();
                 };
 
@@ -106,7 +108,10 @@ namespace NEA
                 else
                 {
                     slider.Visibility = ViewStates.Gone;
-                    current.PerformClick();
+                    if (current != null)
+                    {
+                        current.PerformClick();
+                    }
                 }
             };
             
@@ -123,28 +128,15 @@ namespace NEA
             complete.Click += (sender, e) =>
             {
                 Bitmap image = canvas.Save();
-                ImageSelected(image);
-                /*MemoryStream stream = new MemoryStream();
+                MemoryStream stream = new MemoryStream();
                 image.Compress(Bitmap.CompressFormat.Png, 100, stream);
                 byte[] byteArray = stream.ToArray();
                 Intent intent = new Intent(this, typeof(MainActivity));
                 intent.PutExtra("image", byteArray);
                 SetResult(Result.Ok, intent);
-                Finish();*/
+                Finish();
             };
 
-        }
-
-        public void ImageSelected(Bitmap imageArray)
-        {
-
-            //Create temporary imageview
-            ImageView imageView = new ImageView(this);
-            imageView.SetImageBitmap(imageArray);
-
-            //Add it to layout
-            RelativeLayout layout = FindViewById<RelativeLayout>(Resource.Id.relativeLayout1);
-            layout.AddView(imageView);
         }
 
         private void OpenDialog(bool supportAlpha)
@@ -156,16 +148,21 @@ namespace NEA
                 canvas.SetColour(e.Color.ToString("x8"));
             };
             dialog.Show();
-            current.PerformClick();
+            if (current != null)
+            {
+                current.PerformClick();
+            }
         }
 
         public void OnValueChange(Java.Lang.Object p0, float p1, bool p2)
         {
             CanvasView canvas = FindViewById<CanvasView>(Resource.Id.canvasView);
             canvas.SetThickness(p1);
-            current.PerformClick();
+            if (current != null)
+            {
+                current.PerformClick();
+            }
         }
-
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
@@ -198,14 +195,17 @@ namespace NEA
             private Paint paint;
             private Path path;
             private Color color;
-            private Canvas canvas;
+            private Canvas newCanvas;
             private Bitmap bitmap;
             private bool fillMode = false;
             private bool touched = false;
             private bool penMode = false;
             private bool eraserMode = false;
-            private List<Stroke> paths = new List<Stroke>();
-
+            private readonly List<Stroke> paths = new List<Stroke>();
+            private readonly Paint mBitmapPaint = new Paint();
+            private readonly Paint borderPaint = new Paint();
+            private bool[,] Visited;
+            private Stack<Point> toVisit = new Stack<Point>();
 
             //Constructors
             public CanvasView(Context context) : base(context)
@@ -227,7 +227,11 @@ namespace NEA
                 path = new Path();
                 paint.Dither = true;
                 paint.StrokeCap = Paint.Cap.Round;
-                paint.StrokeJoin = Paint.Join.Round;      
+                paint.StrokeJoin = Paint.Join.Round;
+                borderPaint.SetStyle(Paint.Style.Stroke);
+                borderPaint.SetARGB(255, 207, 138, 190);
+                borderPaint.StrokeWidth = 10;
+                
             }
 
             //Canvas dimens
@@ -235,8 +239,9 @@ namespace NEA
             {
                 base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
                 SetMeasuredDimension(MeasuredWidth, MeasuredWidth);
-                bitmap = Bitmap.CreateBitmap(MeasuredWidth, MeasuredHeight, Bitmap.Config.Argb8888);
-                canvas = new Canvas(bitmap);
+                bitmap = Bitmap.CreateBitmap(MeasuredWidth,MeasuredHeight, Bitmap.Config.Argb8888);
+                newCanvas = new Canvas(bitmap);
+                Visited = new bool[MeasuredWidth, MeasuredHeight];
             }
 
             //Methods for which drawing tool is selected
@@ -268,7 +273,6 @@ namespace NEA
             }
 
             //Style methods
-
             public void SetThickness(float thickness)
             {
                 paint.StrokeWidth = thickness;
@@ -276,7 +280,6 @@ namespace NEA
 
             public void SetColour(string newColour)
             {
-                Console.WriteLine(newColour);
                 var a = newColour.Substring(0, 2);
                 var r = newColour.Substring(2, 2);
                 var g = newColour.Substring(4, 2);
@@ -290,8 +293,84 @@ namespace NEA
                 color = paint.Color;
             }
 
-            //Undo
+            //Flood fill
+            private int GetPixelColour(int x, int y)
+            {
+                int selectedColour = Color.White;
+                if(bitmap != null)
+                {
+                    if(x>=0 && x<bitmap.Width && y>=0 && y<bitmap.Height)
+                    {
+                        selectedColour = bitmap.GetPixel(x, y);
+                        
+                    }
+                }
+                return selectedColour;
+            }
 
+            private void SetPixelColour(int x, int y, int colour)
+            {
+                Color color = new Color(colour);
+                bitmap.SetPixel(x, y, color);
+            }
+
+            private int FloodFill(int x, int y, int oldColour, int newColour)
+            {
+                int sum = 0;
+                if(x<0 || x>= bitmap.Width || y<0 || y>= bitmap.Height)
+                {
+                    return -1;
+                }
+                if(GetPixelColour(x,y) !=  oldColour)
+                {
+                    return -1;
+                }
+                ///Visited[x, y] = true;
+                toVisit.Push(new Point(x,y));
+                while(toVisit.Count > 0)
+                {
+                    Point newPoint = toVisit.Pop();
+                    x = newPoint.X;
+                    y = newPoint.Y;
+                    if(GetPixelColour(x, y) == oldColour)
+                    {
+                        SetPixelColour(x, y, newColour);
+                        sum++;
+                        if (x<bitmap.Width-1)
+                        {
+                            if (GetPixelColour(x + 1, y) == oldColour)
+                            {
+                                toVisit.Push(new Point(x + 1, y));
+                            }
+                        }
+                        if(x>0)
+                        {
+                            if (GetPixelColour(x - 1, y) == oldColour)
+                            {
+                                toVisit.Push(new Point(x - 1, y));
+                            }
+                        }
+                        if(y<bitmap.Height-1)
+                        {
+                            if (GetPixelColour(x, y + 1) == oldColour)
+                            {
+                                toVisit.Push(new Point(x, y + 1));
+                            }
+                        }
+                        if(y>0)
+                        {
+                            if (GetPixelColour(x, y - 1) == oldColour)
+                            {
+                                toVisit.Push(new Point(x, y - 1));
+                            }
+                        }
+                    }
+                }
+                return sum;
+
+            }
+
+            //Undo
             public void Undo()
             {
                 if (paths.Count > 0)
@@ -303,8 +382,7 @@ namespace NEA
 
             //Save
             public Bitmap Save()
-            {
-                canvas.SetBitmap(bitmap);
+            { 
                 return bitmap;
             }
 
@@ -322,7 +400,11 @@ namespace NEA
 
                         if (fillMode)
                         {
-                            path.AddRect(0, 0, Width, Height, Path.Direction.Cw);
+                            int setcolor = GetPixelColour(Math.Round(e.GetX()), Math.Round(e.GetY()));
+                            Console.WriteLine("first colour: " +setcolor);
+                            int sum = FloodFill(Math.Round(e.GetX()), Math.Round(e.GetY()), setcolor, paint.Color);
+                            Console.WriteLine("sum: " + sum);
+                            //path.AddRect(0, 0, Width, Height, Path.Direction.Cw);
                             Invalidate();
                         }
                         if(penMode || eraserMode)
@@ -354,29 +436,31 @@ namespace NEA
                 return base.OnTouchEvent(e);
             }
 
-
             //Method to draw something
             protected override void OnDraw(Canvas canvas)
             {
                 base.OnDraw(canvas);
 
                 canvas.Save();
+                newCanvas.DrawColor(Color.White);
                 foreach (Stroke stroke in paths)
                 {
                     if (stroke.strokepaint != null && stroke.strokepath != null)
                     {
                         canvas.DrawPath(stroke.strokepath, stroke.strokepaint);
+                        newCanvas.DrawPath(stroke.strokepath, stroke.strokepaint);
                     }
                 }
-                canvas.DrawBitmap(bitmap, 0, 0, paint);
+                newCanvas.DrawBitmap(bitmap, 0, 0, mBitmapPaint);
+                canvas.DrawBitmap(bitmap, 0, 0, mBitmapPaint);
+                canvas.DrawRoundRect(0, 0, canvas.Width, canvas.Height, 60,60,borderPaint);
                 canvas.Restore();
-               
 
                 if (touched)
                 {
                     if (fillMode)
                     {
-                        canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
+                        //canvas.DrawRect(0, 0, canvas.Width, canvas.Height, paint);
                     }
                     if (penMode || eraserMode)
                     {

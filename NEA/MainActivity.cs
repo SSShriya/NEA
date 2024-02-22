@@ -27,6 +27,8 @@ using Plugin.Media.Abstractions;
 using Android.Icu.Text;
 using static Xamarin.Essentials.Platform;
 using Intent = Android.Content.Intent;
+using AndroidX.Core.OS;
+using Exception = Java.Lang.Exception;
 
 
 namespace NEA
@@ -34,6 +36,7 @@ namespace NEA
     [Activity(Label = "@string/home", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
+        
         readonly string[] permissionGroup =
         {
             //Needed to request permission to camera and files
@@ -157,11 +160,10 @@ namespace NEA
             }
 
             //To capture image and set attributes of the image (size, compression..)
-            var capturedImage = await CrossMedia.Current.TakePhotoAsync(new Plugin.Media.Abstractions.StoreCameraMediaOptions
+            var capturedImage = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
             {
-                PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium,
-                CompressionQuality = 40,
-                AllowCropping = true
+                PhotoSize = PhotoSize.Medium,
+                CompressionQuality = 90,
             }
             ) ;
 
@@ -187,8 +189,8 @@ namespace NEA
 
             var chosenImage = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
             {
-                PhotoSize = Plugin.Media.Abstractions.PhotoSize.Medium,
-                CompressionQuality = 40
+                PhotoSize = PhotoSize.Medium,
+                CompressionQuality = 90
                 
             });
 
