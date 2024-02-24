@@ -34,9 +34,6 @@
         android:layout_margin="10dp"
         />
 
-        
-
-
 
         <RadioGroup
             android:layout_below="@id/canvasView"
