@@ -40,7 +40,7 @@ using Point = Android.Graphics.Point;
 namespace NEA
 {
     [Activity(Label = "@string/canvas", Theme = "@style/AppTheme.NoActionBar")]
-    public class CanvasActivity : AppCompatActivity
+    public class CanvasActivity : AppCompatActivity, IBaseOnChangeListener
     {
         private readonly int color = unchecked((int)0xffffff00);
         private RadioButton current;
