@@ -1,35 +1,25 @@
-﻿using NEA;
-using System;
+﻿using System;
 using Android.App;
 using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
 using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.Navigation;
-using Google.Android.Material.Snackbar;
-using Android.Content;
 using Android.Widget;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Android.Hardware;
 using Android;
 using Plugin.Media;
-using System.Drawing;
 using Android.Graphics;
 using Bitmap = Android.Graphics.Bitmap;
-using Java.Lang;
-using AlertDialog = Android.App.AlertDialog;
-using System.Threading.Tasks;
 using Plugin.Media.Abstractions;
-using Android.Icu.Text;
 using static Xamarin.Essentials.Platform;
 using Intent = Android.Content.Intent;
-using AndroidX.Core.OS;
-using Exception = Java.Lang.Exception;
-
+using System.Threading.Tasks;
+using AlertDialog = Android.App.AlertDialog;
+using Android.Content;
 
 namespace NEA
 {
@@ -48,10 +38,16 @@ namespace NEA
         {
             base.OnCreate(savedInstanceState);
             Init(this, savedInstanceState);
+            Settings.FirstRun = true;
+            if(Settings.FirstRun)
+            {
+                FirstRun();
+                Settings.FirstRun = false;
+            }
+
             SetContentView(Resource.Layout.activity_main);
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
-            Init(this, savedInstanceState);
 
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += (s, arg) =>
@@ -94,6 +90,61 @@ namespace NEA
             navigationView.SetNavigationItemSelectedListener(this);
         }
 
+        //First run
+        protected void FirstRun()
+        {
+            //first dialog with welcome message
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.SetTitle("Welcome!");
+            builder.SetCancelable(false);
+            builder.SetPositiveButton("Get Started", (sender, args) =>
+            {
+                UsernameAlert();
+            });
+            builder.Show();
+        }
+        protected void UsernameAlert()
+        {
+            //second dialog with input username
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            LayoutInflater layoutInflater = LayoutInflater.FromContext(this);
+            View view = layoutInflater.Inflate(Resource.Layout.firstrun, null);
+            builder.SetView(view);
+            builder.SetCancelable(false);
+            builder.SetTitle("Enter a username");
+            AlertDialog dialog = null;
+            builder.SetPositiveButton("Confirm", (sender, args) =>
+            {
+                //username validation
+                EditText editText = view.FindViewById<EditText>(Resource.Id.username);
+                if(editText.Text == "")
+                {
+                    Toast.MakeText(this, "Username cannot be empty", ToastLength.Short).Show();
+                    UsernameAlert();
+                }
+                else if(editText.Text.Length > 15)
+                {
+                    Toast.MakeText(this, "Username has to be less than 15 characters", ToastLength.Short).Show();
+                    UsernameAlert();
+                }
+                else
+                {
+                    Toast.MakeText(this, "You're all set!", ToastLength.Short).Show();
+                    var inputUsername = editText.Text.ToString();
+                    CreateUser(inputUsername);
+                }
+            });
+            dialog = builder.Create();
+            dialog.Show();
+        }
+
+        //Creating a User by requesting API
+        protected void CreateUser(string username)
+        {
+            Console.WriteLine(username);
+        }
+
+        //For receiving data from canvas
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);

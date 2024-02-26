@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NEA", "NEA\NEA.csproj", "{63EBAAAD-27D5-4738-B311-6B4587826D07}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEA Rest API", "..\..\NEA REST API\NEA REST API\NEA Rest API.csproj", "{AD0A1285-587F-4215-8D2B-587545D5CBE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{63EBAAAD-27D5-4738-B311-6B4587826D07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63EBAAAD-27D5-4738-B311-6B4587826D07}.Release|Any CPU.Build.0 = Release|Any CPU
 		{63EBAAAD-27D5-4738-B311-6B4587826D07}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{AD0A1285-587F-4215-8D2B-587545D5CBE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD0A1285-587F-4215-8D2B-587545D5CBE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD0A1285-587F-4215-8D2B-587545D5CBE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD0A1285-587F-4215-8D2B-587545D5CBE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
