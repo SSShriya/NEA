@@ -129,7 +129,7 @@ namespace NEA
                 }
                 else
                 {
-                    Toast.MakeText(this, "You're all set!", ToastLength.Short).Show();
+                    Toast.MakeText(this, "Creating your user!", ToastLength.Short).Show();
                     var inputUsername = editText.Text.ToString();
                     CreateUser(inputUsername);
                 }
@@ -142,6 +142,8 @@ namespace NEA
         protected void CreateUser(string username)
         {
             Console.WriteLine(username);
+            APIRequest request = new APIRequest();
+            request.AddUser(username);
         }
 
         //For receiving data from canvas
