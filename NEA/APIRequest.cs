@@ -17,28 +17,39 @@ namespace NEA
 {
     public class APIRequest
     {
-        private string url = "https://10.0.2.2:7123";
-        public async void AddUser(string username)
+        private string url = "https://10.0.2.2:7123/";
+        public async Task<string> AddUser(string username)
         {
-            int id = 358365890;
             //creates http client
             HttpClientHandler handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
             HttpClient client = new HttpClient(handler);
             client.BaseAddress = new Uri(url);
-
+            
             //creates data to put in body of request
-            var data = $"{{ \"uname\": \"{username}\" }}";
+            string data = $"\"{username}\"";
             var content = new StringContent(data, Encoding.UTF8, "application/json");
-            //HttpResponseMessage response = await client.GetAsync($"User?id={id}");
-            //does request
-            //I CHANGED THIS TO BE "USER" IDK IF IT WORKS
-            HttpResponseMessage response = await client.PostAsync("User", content);
-            response.EnsureSuccessStatusCode();
-
-            //prints response
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"{jsonResponse}\n");
+            var jsonResponse = "";
+            try
+            {
+                //does request
+                HttpResponseMessage response = await client.PostAsync("User", content);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    //prints response
+                    jsonResponse = await response.Content.ReadAsStringAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                client.Dispose();
+            }
+            return jsonResponse;
         }
     }
 }

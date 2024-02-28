@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Android.App;
 using Android.OS;
 using Android.Runtime;
@@ -20,6 +21,8 @@ using Intent = Android.Content.Intent;
 using System.Threading.Tasks;
 using AlertDialog = Android.App.AlertDialog;
 using Android.Content;
+using Path = System.IO.Path;
+using Environment = System.Environment;
 
 namespace NEA
 {
@@ -139,11 +142,31 @@ namespace NEA
         }
 
         //Creating a User by requesting API
-        protected void CreateUser(string username)
+        protected async void CreateUser(string username)
         {
-            Console.WriteLine(username);
             APIRequest request = new APIRequest();
-            request.AddUser(username);
+            string userID = await request.AddUser(username);
+            if(userID == "")
+            {
+                Toast.MakeText(this, "User creation unsuccessful.", ToastLength.Short).Show();
+                UsernameAlert();
+            }
+            else
+            {
+                //IDKK
+                string path = Application.Context.GetExternalFilesDir(null).ToString();
+                string folderPath = Path.Combine(path, "userdetails");
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+                string filePath = Path.Combine(folderPath, "user.txt");
+                StreamWriter writer = new StreamWriter(filePath);
+                writer.Write(userID);
+                writer.Flush();
+                writer.Close();
+                
+            }
         }
 
         //For receiving data from canvas
