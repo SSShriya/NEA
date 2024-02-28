@@ -29,7 +29,8 @@ namespace NEA
     [Activity(Label = "@string/home", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
-        
+        public User currentUser;
+
         readonly string[] permissionGroup =
         {
             //Needed to request permission to camera and files
@@ -41,17 +42,22 @@ namespace NEA
         {
             base.OnCreate(savedInstanceState);
             Init(this, savedInstanceState);
-            Settings.FirstRun = true;
+
+            //if first run, creates new user
             if(Settings.FirstRun)
             {
                 FirstRun();
                 Settings.FirstRun = false;
             }
+            else
+            {
+                currentUser = CreateObject();
+            }
 
+            //items on page
             SetContentView(Resource.Layout.activity_main);
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
-
             FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
             fab.Click += (s, arg) =>
             {
@@ -80,17 +86,17 @@ namespace NEA
                 };
 
 
-            };
-            
-            RequestPermissions(permissionGroup, 0);
-
+            };          
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
             drawer.AddDrawerListener(toggle);
             toggle.SyncState();
-
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
+
+            //get file + camera permissions
+            RequestPermissions(permissionGroup, 0);                                
+
         }
 
         //First run
@@ -153,7 +159,7 @@ namespace NEA
             }
             else
             {
-                //IDKK
+                //Writes username and userID to file user.txt
                 string path = Application.Context.GetExternalFilesDir(null).ToString();
                 string folderPath = Path.Combine(path, "userdetails");
                 if (!Directory.Exists(folderPath))
@@ -162,11 +168,27 @@ namespace NEA
                 }
                 string filePath = Path.Combine(folderPath, "user.txt");
                 StreamWriter writer = new StreamWriter(filePath);
-                writer.Write(userID);
+                writer.WriteLine(userID);
+                writer.WriteLine(username);
                 writer.Flush();
                 writer.Close();
-                
+
+                currentUser = CreateObject();
             }
+        }
+
+        //Creates instance of class User
+        public User CreateObject()
+        {
+            //Read user from file and create object of class
+            string path = Application.Context.GetExternalFilesDir(null).ToString();
+            string filePath = Path.Combine(path, "userdetails", "user.txt");
+            StreamReader reader = new StreamReader(filePath);
+            int id = Convert.ToInt32(reader.ReadLine());
+            string username = reader.ReadLine();
+            User currentUser = new User(id, username);
+            reader.Close();
+            return currentUser;
         }
 
         //For receiving data from canvas
@@ -195,7 +217,6 @@ namespace NEA
         }
 
         //Options menus
- 
         public bool OnNavigationItemSelected(IMenuItem item)
         {
             int id = item.ItemId;
@@ -203,6 +224,8 @@ namespace NEA
             if (id == Resource.Id.nav_profile)
             {
                 var Profile = new Intent(this, typeof(ProfileActivity));
+                Profile.PutExtra("username", currentUser.currentUsername);
+                Profile.PutExtra("id", currentUser.currentID);
                 StartActivity(Profile);
             }
             else if (id == Resource.Id.nav_pairings)

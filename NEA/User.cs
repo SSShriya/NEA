@@ -11,12 +11,14 @@ using System.Text;
 
 namespace NEA
 {
-    public class User
+    public class User 
     {
-        private int currentID; 
-        public User(int id)
+        public int currentID; 
+        public string currentUsername;
+        public User(int id, string username)
         {
             currentID = id;
+            currentUsername = username;
         }
     }
 }
