@@ -6,4 +6,11 @@
 	<string name="canvas">Draw!</string>
 	<string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+	<string name="sharecode">Share this code with who you want to pair with</string>
+	<string name="addpairing">Or, enter your friend\'s code here</string>
+	<string name="defCode">123456789</string>
+	<string name="submit">Submit</string>
+	<string name="userdetails">User Details</string>
+	<string name="usernmae">Username</string>
+	<string name="changeUsername">Change Username</string>
 </resources>

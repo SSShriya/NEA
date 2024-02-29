@@ -31,7 +31,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="User Details"
+            android:text="@string/userdetails"
             android:gravity="top"
             android:textSize="25sp"
             android:textColor="@android:color/black"/>
@@ -42,7 +42,7 @@
             android:id="@+id/editUsername"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="Username"
+            android:text="@string/usernmae"
             android:textSize="20sp"
             android:background="@drawable/text_border"
             android:padding="5dp"/>
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/btn_username"
             android:layout_marginTop="10dp"
-            android:text="Change Username"
+            android:text="@string/changeUsername"
             android:backgroundTint="@color/colorAccent">
         </Button>
 

@@ -17,6 +17,8 @@ using Google.Android.Material.Snackbar;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using System.IO;
+using static Xamarin.Essentials.Platform;
+using Intent = Android.Content.Intent;
 
 
 namespace NEA
@@ -52,7 +54,6 @@ namespace NEA
             LayoutInflater layoutInflater = LayoutInflater.FromContext(this);
             View view = layoutInflater.Inflate(Resource.Layout.firstrun, null);
             builder.SetView(view);
-            builder.SetCancelable(false);
             builder.SetTitle("Enter a username");
             AlertDialog dialog = null;
             builder.SetPositiveButton("Confirm", (sender, args) =>
@@ -90,6 +91,12 @@ namespace NEA
             }
             else
             {
+                currentUsername = newUsername;
+
+                //Writes username to textbox
+                TextView tbx_username = FindViewById<TextView>(Resource.Id.editUsername);
+                tbx_username.Text = currentUsername;
+
                 //Writes username and userID to file user.txt
                 string path = Application.Context.GetExternalFilesDir(null).ToString();
                 string folderPath = Path.Combine(path, "userdetails");
@@ -100,16 +107,17 @@ namespace NEA
                 string filePath = Path.Combine(folderPath, "user.txt");
                 StreamWriter writer = new StreamWriter(filePath);
                 writer.WriteLine(currentID);
-                writer.WriteLine(newUsername);
+                writer.WriteLine(currentUsername);
                 writer.Flush();
                 writer.Close();
-                currentUsername = newUsername;
             }
         }
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
             var Homepage = new Intent(this, typeof(MainActivity));
-            StartActivity(Homepage);
+            Homepage.PutExtra("currentUsername", currentUsername);
+            SetResult(Result.Ok, Homepage);
+            Finish();
             return true;
         }
     }

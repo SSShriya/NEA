@@ -23,6 +23,8 @@ using AlertDialog = Android.App.AlertDialog;
 using Android.Content;
 using Path = System.IO.Path;
 using Environment = System.Environment;
+using static Android.Provider.ContactsContract;
+using Directory = System.IO.Directory;
 
 namespace NEA
 {
@@ -95,8 +97,23 @@ namespace NEA
             navigationView.SetNavigationItemSelectedListener(this);
 
             //get file + camera permissions
-            RequestPermissions(permissionGroup, 0);                                
+            RequestPermissions(permissionGroup, 0);
 
+            //Get friends
+            LinearLayout btnLayout = FindViewById<LinearLayout>(Resource.Id.homescreenLayout);
+            currentUser.GetFriends();
+            if (currentUser.userFriends != null)
+            {
+                foreach (Friend friend in currentUser.userFriends)
+                {
+                    LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent,
+                   LinearLayout.LayoutParams.WrapContent);
+                    Button btn = new Button(this);
+                    btn.Id = friend.userID;
+                    btn.Text = friend.name;
+                    btnLayout.AddView(btn, param);
+                }
+            }
         }
 
         //First run
@@ -191,17 +208,6 @@ namespace NEA
             return currentUser;
         }
 
-        //For receiving data from canvas
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            base.OnActivityResult(requestCode, resultCode, data);
-            if (resultCode == Result.Ok)
-            {
-                byte[] byteArray = data.GetByteArrayExtra("image");
-                ImageSelected(byteArray);
-            }
-        }
-
         [Obsolete]
         public override void OnBackPressed()
         {
@@ -226,11 +232,12 @@ namespace NEA
                 var Profile = new Intent(this, typeof(ProfileActivity));
                 Profile.PutExtra("username", currentUser.currentUsername);
                 Profile.PutExtra("id", currentUser.currentID);
-                StartActivity(Profile);
+                StartActivityForResult(Profile, 1);
             }
             else if (id == Resource.Id.nav_pairings)
             {
                 var Pairings = new Intent(this, typeof(PairingActivity));
+                Pairings.PutExtra("id", currentUser.currentID);
                 StartActivity(Pairings);
             }
             
@@ -238,6 +245,25 @@ namespace NEA
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);
             return true;
+        }
+
+        //For receiving data from canvas
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+            //Result from canvas activity
+            if (resultCode == Result.Ok && requestCode == 0)
+            {
+                byte[] byteArray = data.GetByteArrayExtra("image");
+                ImageSelected(byteArray);
+            }
+
+            //Result from profile activity
+            if (resultCode == Result.Ok && requestCode == 1)
+            {
+                currentUser.currentUsername = data.GetStringExtra("currentUsername");
+                Console.WriteLine(currentUser.currentUsername);
+            }
         }
 
         //App permissions

@@ -67,6 +67,7 @@
   <ItemGroup>
     <Compile Include="APIRequest.cs" />
     <Compile Include="CanvasActivity.cs" />
+    <Compile Include="Friend.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="PairingActivity.cs" />
     <Compile Include="ProfileActivity.cs" />
