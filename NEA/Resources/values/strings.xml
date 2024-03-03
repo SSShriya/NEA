@@ -13,4 +13,10 @@
 	<string name="userdetails">User Details</string>
 	<string name="usernmae">Username</string>
 	<string name="changeUsername">Change Username</string>
+	<string name="delete">Delete</string>
+	<string name="deletepairing">Click this button to delete a pairing:</string>
+	<string name="confirm">Confirm</string>
+
+
+
 </resources>

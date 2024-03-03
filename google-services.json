@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "185604341146",
+    "project_id": "nea-files-a5ba8",
+    "storage_bucket": "nea-files-a5ba8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185604341146:android:09f0eee2eedd1adc330e23",
+        "android_client_info": {
+          "package_name": "com.shriya.NEA"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvr1YVZ_79TuaNdy6QkSeAdN9iPZE3chQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

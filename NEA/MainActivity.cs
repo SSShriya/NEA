@@ -25,6 +25,9 @@ using Path = System.IO.Path;
 using Environment = System.Environment;
 using static Android.Provider.ContactsContract;
 using Directory = System.IO.Directory;
+using AndroidX.Core.Content;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace NEA
 {
@@ -46,7 +49,7 @@ namespace NEA
             Init(this, savedInstanceState);
 
             //if first run, creates new user
-            if(Settings.FirstRun)
+            if (Settings.FirstRun)
             {
                 FirstRun();
                 Settings.FirstRun = false;
@@ -100,19 +103,58 @@ namespace NEA
             RequestPermissions(permissionGroup, 0);
 
             //Get friends
-            LinearLayout btnLayout = FindViewById<LinearLayout>(Resource.Id.homescreenLayout);
             currentUser.GetFriends();
+            ShowFriends();
+        }
+
+        //Create friend buttons
+        private void ShowFriends()
+        {
+            LinearLayout btnLayout = FindViewById<LinearLayout>(Resource.Id.homepageLinear);
+            btnLayout.RemoveAllViews();
             if (currentUser.userFriends != null)
             {
-                foreach (Friend friend in currentUser.userFriends)
+                if (currentUser.userFriends.Count == 0)
                 {
-                    LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent,
-                   LinearLayout.LayoutParams.WrapContent);
-                    Button btn = new Button(this);
-                    btn.Id = friend.userID;
-                    btn.Text = friend.name;
-                    btnLayout.AddView(btn, param);
+                    TextView textView = new TextView(this);
+                    textView.Text = "You have no pairings yet. Go to the Pairings page to add a pairing!";
+                    textView.Gravity = Android.Views.GravityFlags.Center;
+                    textView.TextSize = 24;
+                    btnLayout.AddView(textView);
                 }
+                else
+                {
+                    TextView textView = new TextView(this);
+                    textView.Text = "Friends";
+                    textView.Gravity = Android.Views.GravityFlags.CenterHorizontal;
+                    textView.TextSize = 24;
+                    textView.SetTextColor(Color.Black);
+                    LinearLayout.LayoutParams paramtext = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent,
+                        LinearLayout.LayoutParams.WrapContent);
+                    paramtext.SetMargins(0, 0, 0, 30);
+                    btnLayout.AddView(textView, paramtext);
+                    foreach (Friend friend in currentUser.userFriends)
+                    {
+                        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MatchParent,
+                        LinearLayout.LayoutParams.WrapContent);
+                        param.SetMargins(50, 20, 50, 50);
+                        Button btn = new Button(this);
+                        btn.SetBackgroundResource(Resource.Drawable.text_border);
+                        btn.SetBackgroundColor(new Color(ContextCompat.GetColor(this, Resource.Color.colorAccent)));
+                        btn.SetAllCaps(false);
+                        btn.Id = friend.userID;
+                        btn.Text = friend.name;
+                        btnLayout.AddView(btn, param);
+                    }
+                }
+            }
+            else
+            {
+                TextView textView = new TextView(this);
+                textView.Text = "You have no pairings yet. Go to the Pairings page to add a pairing!";
+                textView.Gravity = Android.Views.GravityFlags.CenterHorizontal;
+                textView.TextSize = 24;
+                btnLayout.AddView(textView);
             }
         }
 
@@ -236,9 +278,11 @@ namespace NEA
             }
             else if (id == Resource.Id.nav_pairings)
             {
+                string jsonUserFriends = JsonConvert.SerializeObject(currentUser.userFriends);
                 var Pairings = new Intent(this, typeof(PairingActivity));
                 Pairings.PutExtra("id", currentUser.currentID);
-                StartActivity(Pairings);
+                Pairings.PutExtra("jsonUserFriends", jsonUserFriends);
+                StartActivityForResult(Pairings, 2);
             }
             
 
@@ -262,7 +306,14 @@ namespace NEA
             if (resultCode == Result.Ok && requestCode == 1)
             {
                 currentUser.currentUsername = data.GetStringExtra("currentUsername");
-                Console.WriteLine(currentUser.currentUsername);
+            }
+
+            //Result from pairings activity
+            if (resultCode == Result.Ok && requestCode == 2)
+            {
+                string jsonUserFriends = data.GetStringExtra("jsonUserFriends");
+                currentUser.userFriends = JsonConvert.DeserializeObject<List<Friend>>(jsonUserFriends);
+                ShowFriends();
             }
         }
 
@@ -326,6 +377,9 @@ namespace NEA
 
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(chosenImage.Path);
+            var Confirm = new Intent(this, typeof(ConfirmActivity));
+            Confirm.PutExtra("image", imageArray);
+            StartActivity(Confirm);
             ImageSelected(imageArray);
         }
 

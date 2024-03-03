@@ -13,6 +13,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 
+  <include
+    layout="@layout/homepage_layout"    
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
   <com.google.android.material.navigation.NavigationView
     android:id="@+id/nav_view"
     android:layout_width="wrap_content"
@@ -22,11 +27,5 @@
     app:headerLayout="@layout/nav_header_main"
     app:menu="@menu/activity_main_drawer" />
 
-    <LinearLayout
-        android:id="@+id/homescreenLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="100dp"
-        android:orientation="vertical" />
-
+    
 </androidx.drawerlayout.widget.DrawerLayout>

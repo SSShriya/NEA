@@ -21,10 +21,12 @@ namespace NEA
         {
             currentID = id;
             currentUsername = username;
+            userFriends = new List<Friend>();
         }
 
         public void GetFriends()
         {
+            userFriends.Clear();
             string path = Application.Context.GetExternalFilesDir(null).ToString();
             string filePath = Path.Combine(path, "userdetails", "pairings.txt");
             if (File.Exists(filePath))
@@ -38,6 +40,7 @@ namespace NEA
                     Friend newFriend = new Friend(friendId, friendName, friendPair);
                     userFriends.Add(newFriend);
                 }
+                reader.Close();
             }
         }
     }

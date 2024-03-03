@@ -18,6 +18,8 @@ namespace NEA
     public class APIRequest
     {
         private string url = "https://10.0.2.2:7123/";
+
+        //POST request to create user on first run
         public async Task<string> AddUser(string username)
         {
             //creates http client
@@ -56,6 +58,7 @@ namespace NEA
             return jsonResponse;
         }
 
+        //PUT request to edit username
         public async Task<string> EditUsername(int id, string username)
         {
             //creates http client
@@ -93,6 +96,7 @@ namespace NEA
             return jsonResponse;
         }
 
+        //GET request to get user when pairing
         public async Task<string> GetUser(int UID)
         {
             HttpClientHandler handler = new HttpClientHandler();
@@ -123,6 +127,7 @@ namespace NEA
             return jsonResponse;
         }
 
+        //POST request to add pairing
         public async Task<string> AddPairing(int user1, int user2)
         {
             //creates http client
@@ -152,6 +157,50 @@ namespace NEA
             {
                 Console.WriteLine(ex.Message);
                 jsonResponse = "";
+            }
+            finally
+            {
+                client.Dispose();
+            }
+            return jsonResponse;
+        }
+
+        //DELETE request to delete pairing
+        public async Task<bool> DelPairing(int pairingID)
+        {
+            //creates http client
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            HttpClient client = new HttpClient(handler);
+            client.BaseAddress = new Uri(url + "Pairing");
+
+            //creates data to put in body of request
+            string data = $"{pairingID}";
+            var content = new StringContent(data);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                Content = content
+            };
+
+            var jsonResponse = false;
+            try
+            {
+                //does request
+                HttpResponseMessage response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    //prints response
+                    jsonResponse = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                jsonResponse = false;
             }
             finally
             {
