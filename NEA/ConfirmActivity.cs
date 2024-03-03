@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Android.Graphics;
+using AndroidX.DrawerLayout.Widget;
 
 namespace NEA
 {
@@ -20,14 +22,27 @@ namespace NEA
         {
             base.OnCreate(savedInstanceState);
 
-            Init(this, savedInstanceState);
+            Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_confirm);
+
+            byte[] imageArray = Intent.GetByteArrayExtra("image");
+            ImageSelected(imageArray);
 
             //Toolbar
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
             SupportActionBar.SetHomeButtonEnabled(true);
+        }
+
+        public void ImageSelected(byte[] imageArray)
+        {
+            //Create bitmap
+            Bitmap bitmap = BitmapFactory.DecodeByteArray(imageArray, 0, imageArray.Length);
+
+            //Create temporary imageview
+            ImageView imageView = FindViewById<ImageView>(Resource.Id.selectedImage);
+            imageView.SetImageBitmap(bitmap);
         }
     }
 }

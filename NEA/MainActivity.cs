@@ -380,7 +380,6 @@ namespace NEA
             var Confirm = new Intent(this, typeof(ConfirmActivity));
             Confirm.PutExtra("image", imageArray);
             StartActivity(Confirm);
-            ImageSelected(imageArray);
         }
 
         //Handle image
