@@ -87,7 +87,10 @@ namespace NEA
                 {
                     popupWindow.Dismiss();
                     var Canvas = new Intent(this, typeof(CanvasActivity));
-                    StartActivityForResult(Canvas, 0);
+                    string jsonUserFriends = JsonConvert.SerializeObject(currentUser.userFriends);
+                    Canvas.PutExtra("jsonUserFriends", jsonUserFriends);
+                    Canvas.PutExtra("id", currentUser.currentID);
+                    StartActivity(Canvas);
                 };
 
 
@@ -295,12 +298,6 @@ namespace NEA
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
-            //Result from canvas activity
-            if (resultCode == Result.Ok && requestCode == 0)
-            {
-                byte[] byteArray = data.GetByteArrayExtra("image");
-                ImageSelected(byteArray);
-            }
 
             //Result from profile activity
             if (resultCode == Result.Ok && requestCode == 1)
@@ -350,7 +347,12 @@ namespace NEA
 
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(capturedImage.Path);
-            ImageSelected(imageArray);
+            var Confirm = new Intent(this, typeof(ConfirmActivity));
+            string jsonUserFriends = JsonConvert.SerializeObject(currentUser.userFriends);
+            Confirm.PutExtra("jsonUserFriends", jsonUserFriends);
+            Confirm.PutExtra("image", imageArray);
+            Confirm.PutExtra("id", currentUser.currentID);
+            StartActivity(Confirm);
         }
 
         //Gallery 
@@ -378,24 +380,11 @@ namespace NEA
             //Convert file to byte array
             byte[] imageArray = System.IO.File.ReadAllBytes(chosenImage.Path);
             var Confirm = new Intent(this, typeof(ConfirmActivity));
+            string jsonUserFriends = JsonConvert.SerializeObject(currentUser.userFriends);
+            Confirm.PutExtra("jsonUserFriends", jsonUserFriends);
             Confirm.PutExtra("image", imageArray);
+            Confirm.PutExtra("id", currentUser.currentID);
             StartActivity(Confirm);
-        }
-
-        //Handle image
-
-        public void ImageSelected(byte[] imageArray)
-        {
-            //Create bitmap
-            Bitmap bitmap = BitmapFactory.DecodeByteArray(imageArray, 0, imageArray.Length);
-
-            //Create temporary imageview
-            ImageView imageView = new ImageView(this);
-            imageView.SetImageBitmap(bitmap);
-
-            //Add it to layout
-            DrawerLayout layout = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
-            layout.AddView(imageView);
         }
 
     }

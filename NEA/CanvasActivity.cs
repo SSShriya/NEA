@@ -36,6 +36,7 @@ using Path = Android.Graphics.Path;
 using AndroidX.DrawerLayout.Widget;
 using AndroidX.Browser.Trusted;
 using Point = Android.Graphics.Point;
+using Newtonsoft.Json;
 
 namespace NEA
 {
@@ -44,11 +45,16 @@ namespace NEA
     {
         private readonly int color = unchecked((int)0xffffff00);
         private RadioButton current;
+        private List<Friend> userFriends;
+        private int currentID;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_canvas);
+            string jsonUserFriends = Intent.GetStringExtra("jsonUserFriends");
+            userFriends = JsonConvert.DeserializeObject<List<Friend>>(jsonUserFriends);
+            currentID = Intent.GetIntExtra("id",0);
 
             //Toolbar
             Toolbar toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
@@ -130,9 +136,12 @@ namespace NEA
                 MemoryStream stream = new MemoryStream();
                 image.Compress(Bitmap.CompressFormat.Png, 100, stream);
                 byte[] byteArray = stream.ToArray();
-                Intent intent = new Intent(this, typeof(MainActivity));
-                intent.PutExtra("image", byteArray);
-                SetResult(Result.Ok, intent);
+                var Confirm = new Intent(this, typeof(ConfirmActivity));
+                string jsonUserFriends = JsonConvert.SerializeObject(userFriends);
+                Confirm.PutExtra("jsonUserFriends", jsonUserFriends);
+                Confirm.PutExtra("image", byteArray);
+                Confirm.PutExtra("id", currentID);
+                StartActivity(Confirm);
                 Finish();
             };
 
