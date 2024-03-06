@@ -131,8 +131,8 @@ namespace NEA
             {
                 ThrowOnCancel = true
             });
-            string filename = $"{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}s={currentID}.png";
-            FirebaseStorageReference reference = storage.Child($"{pairingID}/{filename}");
+            string filename = $"{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.png";
+            FirebaseStorageReference reference = storage.Child($"{pairingID}/{currentID}/{filename}");
 
             try
             {
@@ -148,29 +148,9 @@ namespace NEA
                 Toast.MakeText(this, "Upload Failed", ToastLength.Short).Show();
                 return;
             }
-            WriteFile(filename, pairingID);
-            
+            FileSave save = new FileSave(filename, pairingID, imageArray, currentID);
+            save.WriteFile();
         }
-
-        public void WriteFile(string filename, int pairingID)
-        {
-            //write file to app files            
-            string path = Application.Context.GetExternalFilesDir(null).ToString();
-            string folderPath = Path.Combine(path, "images", $"{pairingID}");
-            if (!Directory.Exists(folderPath))
-            {
-                Directory.CreateDirectory(folderPath);
-            }
-            
-            string filePath = Path.Combine(folderPath, $"{filename}");
-            File.WriteAllBytes(filePath, imageArray);
-
-            ExifInterface exif = new ExifInterface(filePath);
-            exif.SetAttribute(ExifInterface.TagDatetime, DateTime.UtcNow.ToString("yyyy:MM:dd:HH:mm:ss"));
-            exif.SetAttribute(ExifInterface.TagArtist, $"{currentID}");
-            exif.SaveAttributes();
-        }
-
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
