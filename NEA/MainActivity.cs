@@ -33,6 +33,13 @@ using Google.Apis.Util;
 using System.Net.Http;
 using Org.Json;
 using System.Net;
+using Firebase.Messaging;
+using System.Runtime.CompilerServices;
+using Android.Gms.Tasks;
+using Firebase;
+using Plugin.FirebasePushNotification;
+
+
 
 namespace NEA
 {
@@ -46,12 +53,47 @@ namespace NEA
             //Needed to request permission to camera and files
             Manifest.Permission.ReadExternalStorage,
             Manifest.Permission.WriteExternalStorage,
-            Manifest.Permission.Camera
+            Manifest.Permission.ManageExternalStorage,
+            Manifest.Permission.Camera,
+            Manifest.Permission.PostNotifications
+
         };
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+            FirebaseApp.InitializeApp(this);
+
+            //get file + camera permissions
+            RequestPermissions(permissionGroup, 0);
+
             Init(this, savedInstanceState);
+            FirebasePushNotificationManager.DefaultNotificationChannelId = "FirebasePushNotificationChannel";
+            FirebasePushNotificationManager.DefaultNotificationChannelName = "ImageAvailable";
+            FirebasePushNotificationManager.Initialize(this, true);
+            FirebasePushNotificationManager.ProcessIntent(this, Intent);
+
+            // Token event
+            CrossFirebasePushNotification.Current.OnTokenRefresh += (s, p) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"TOKEN : {p.Token}");
+            };
+            // Push message received event
+            CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
+            {
+
+                System.Diagnostics.Debug.WriteLine("Received");
+
+            };
+            //Push message received event
+            CrossFirebasePushNotification.Current.OnNotificationOpened += (s, p) =>
+            {
+                System.Diagnostics.Debug.WriteLine("Opened");
+                foreach (var data in p.Data)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{data.Key} : {data.Value}");
+                }
+
+            };
 
             //if first run, creates new user
             if (Settings.FirstRun)
@@ -61,7 +103,8 @@ namespace NEA
             }
             else
             {
-                currentUser = CreateObject();
+                currentUser = currentUser = CreateObject();
+                
             }
 
             //items on page
@@ -107,15 +150,18 @@ namespace NEA
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
 
-            //get file + camera permissions
-            RequestPermissions(permissionGroup, 0);
 
             //Get friends
-            currentUser.GetFriends();
-            ShowFriends();
+            if (currentUser != null)
+            {
+                currentUser.GetFriends();
+                ShowFriends();
 
-            //Download images
-            DownloadImage();
+                //Download images
+                DownloadImage();
+
+            }
+
         }
 
         //Download images from firebase
@@ -167,6 +213,7 @@ namespace NEA
                 }
             }
         }
+    
 
         //Get list of files by sending GET request
         private async Task<string[]> GetFilesInFolder(string path)
