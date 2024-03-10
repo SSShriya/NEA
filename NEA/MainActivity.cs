@@ -38,6 +38,11 @@ using System.Runtime.CompilerServices;
 using Android.Gms.Tasks;
 using Firebase;
 using Plugin.FirebasePushNotification;
+using Java.Lang;
+using Android.Gms.Stats;
+using Exception = System.Exception;
+using NEA;
+using Resource = NEA.Resource;
 
 
 
@@ -47,6 +52,7 @@ namespace NEA
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         public User currentUser;
+
 
         readonly string[] permissionGroup =
         {
@@ -63,7 +69,7 @@ namespace NEA
             base.OnCreate(savedInstanceState);
             FirebaseApp.InitializeApp(this);
 
-            //get file + camera permissions
+            //get file + camera + notification permissions
             RequestPermissions(permissionGroup, 0);
 
             Init(this, savedInstanceState);
@@ -77,22 +83,12 @@ namespace NEA
             {
                 System.Diagnostics.Debug.WriteLine($"TOKEN : {p.Token}");
             };
+
             // Push message received event
             CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
             {
 
                 System.Diagnostics.Debug.WriteLine("Received");
-
-            };
-            //Push message received event
-            CrossFirebasePushNotification.Current.OnNotificationOpened += (s, p) =>
-            {
-                System.Diagnostics.Debug.WriteLine("Opened");
-                foreach (var data in p.Data)
-                {
-                    System.Diagnostics.Debug.WriteLine($"{data.Key} : {data.Value}");
-                }
-
             };
 
             //if first run, creates new user
@@ -103,8 +99,7 @@ namespace NEA
             }
             else
             {
-                currentUser = currentUser = CreateObject();
-                
+                currentUser = currentUser = CreateObject();                
             }
 
             //items on page
