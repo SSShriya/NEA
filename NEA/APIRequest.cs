@@ -17,6 +17,12 @@ namespace NEA
 {
     public class APIRequest
     {
+        public class PairingData
+        {
+            public int user1 { get; set; }
+            public int pairingID { get; set; }
+        }
+
         private string url = "https://10.0.2.2:7123/";
 
         //POST request to create user on first run
@@ -165,6 +171,40 @@ namespace NEA
             return jsonResponse;
         }
 
+        //GET request to receive pairings
+
+        public async Task<List<PairingData>> GetPairings(int userID, int pairingID)
+        {
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            HttpClient client = new HttpClient(handler);
+            client.BaseAddress = new Uri(url);
+            var jsonResponse = "";
+            List<PairingData> newPairings = new List<PairingData>();
+            try
+            {
+                //does request
+                HttpResponseMessage response = await client.GetAsync($"Pairing/{userID}/{pairingID}");
+                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    //gets response
+                    jsonResponse = await response.Content.ReadAsStringAsync();
+                    newPairings = JsonConvert.DeserializeObject<List<PairingData>>(jsonResponse);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                client.Dispose();
+            }
+            return newPairings;
+        }
+
+        //TAKE THIS OUT WHEN COPYING CODE:
         //DELETE request to delete pairing
         public async Task<bool> DelPairing(int pairingID)
         {

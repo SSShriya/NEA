@@ -129,24 +129,11 @@ namespace NEA
                 //Adds friend details to user friends list:
                 Friend newFriend = new Friend(UID, username, Convert.ToInt32(pairingID));
                 userFriends.Add(newFriend);
-
-                //Writes friend details to file pairings.txt
-                string path = Application.Context.GetExternalFilesDir(null).ToString();
-                string folderPath = Path.Combine(path, "userdetails");
-                if (!Directory.Exists(folderPath))
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-                string filePath = Path.Combine(folderPath, "pairings.txt");
-                StreamWriter writer = new StreamWriter(filePath, append:true);
-                writer.WriteLine(UID);
-                writer.WriteLine(username);
-                writer.WriteLine(pairingID);
-                writer.Flush();
-                writer.Close();
+                newFriend.AddPairing();
             }
         }
 
+        //TAKE THIS OUT WHEN COPYING AND PASTING CODE
         protected async void DeletePairing(int pairingID)
         {
             APIRequest request = new APIRequest();
@@ -211,6 +198,7 @@ namespace NEA
                 }
                 else
                 {
+                    //TAKE THIS OUT WHEN COPYING AND PASTING CODE
                     Toast.MakeText(this, "Deleting...", ToastLength.Short).Show();
                     DeletePairing(friendList.CheckedRadioButtonId);
                 }

@@ -43,6 +43,7 @@ using Android.Gms.Stats;
 using Exception = System.Exception;
 using NEA;
 using Resource = NEA.Resource;
+using System.Linq;
 
 
 
@@ -150,6 +151,8 @@ namespace NEA
             if (currentUser != null)
             {
                 currentUser.GetFriends();
+                //Get any new pairings
+                GetNewPairings();
                 ShowFriends();
 
                 //Download images
@@ -157,6 +160,29 @@ namespace NEA
 
             }
 
+        }
+
+        public async void GetNewPairings()
+        {
+            APIRequest request = new APIRequest();
+            int pairingID = 0;
+            if (currentUser.userFriends.Count != 0)
+            {
+                pairingID = currentUser.userFriends.Last().pairingID;
+            }
+
+            List<APIRequest.PairingData> newPairings = await request.GetPairings(currentUser.currentID, pairingID);
+
+            if (newPairings.Count != 0)
+            {
+                foreach (APIRequest.PairingData pairing in newPairings)
+                {
+                    string username = await request.GetUser(pairing.user1);
+                    Friend friend = new Friend(pairing.user1, username, pairing.pairingID);
+                    currentUser.userFriends.Add(friend);
+                    friend.AddPairing();
+                }
+            }
         }
 
         //Download images from firebase
