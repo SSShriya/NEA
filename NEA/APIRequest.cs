@@ -17,6 +17,7 @@ namespace NEA
 {
     public class APIRequest
     {
+        
         public class PairingData
         {
             public int user1 { get; set; }
@@ -65,7 +66,7 @@ namespace NEA
         }
 
         //PUT request to edit username
-        public async Task<string> EditUsername(int id, string username)
+        public async Task<string> EditUser(int id, string username, string token)
         {
             //creates http client
             HttpClientHandler handler = new HttpClientHandler();
@@ -74,7 +75,7 @@ namespace NEA
             client.BaseAddress = new Uri(url);
 
             //creates data to put in body of request
-            string data = $"{{\"uid\": {id},\"uName\": \"{username}\"}}";
+            string data = $"{{\"uid\": {id},\"uName\": \"{username}\",\"firebaseToken\": \"{token}\"}}";
             byte[] messageBytes = Encoding.UTF8.GetBytes(data);
             var content = new ByteArrayContent(messageBytes);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
@@ -113,7 +114,7 @@ namespace NEA
             try
             {
                 //does request
-                HttpResponseMessage response = await client.GetAsync($"User/{UID}");
+                HttpResponseMessage response = await client.GetAsync($"User/1/{UID}");
                 response.EnsureSuccessStatusCode();
                 if (response.IsSuccessStatusCode)
                 {

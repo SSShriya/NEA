@@ -19,6 +19,7 @@ using AlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using System.IO;
 using static Xamarin.Essentials.Platform;
 using Intent = Android.Content.Intent;
+using Newtonsoft.Json;
 
 
 namespace NEA
@@ -28,11 +29,13 @@ namespace NEA
     {
         private string currentUsername;
         private int currentID;
+        private string token;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
             currentUsername = Intent.GetStringExtra("username");
             currentID = Intent.GetIntExtra("id", 0);
+            token = Intent.GetStringExtra("firebaseToken");
 
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_profile);
@@ -84,14 +87,14 @@ namespace NEA
         protected async void CreateRequest(string username)
         {
             APIRequest request = new APIRequest();
-            string newUsername = await request.EditUsername(currentID, username);
-            if (newUsername == "")
+            string response = await request.EditUser(currentID, username, token);
+            if (response == "")
             {
                 Toast.MakeText(this, "Username change unsuccessful.", ToastLength.Short).Show();
             }
             else
             {
-                currentUsername = newUsername;
+                currentUsername = username;
 
                 //Writes username to textbox
                 TextView tbx_username = FindViewById<TextView>(Resource.Id.editUsername);

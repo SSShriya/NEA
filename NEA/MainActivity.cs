@@ -44,6 +44,8 @@ using Exception = System.Exception;
 using NEA;
 using Resource = NEA.Resource;
 using System.Linq;
+using FirebaseAdmin;
+using FirebaseApp = Firebase.FirebaseApp;
 
 
 
@@ -53,7 +55,7 @@ namespace NEA
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         public User currentUser;
-
+        private string token;
 
         readonly string[] permissionGroup =
         {
@@ -68,7 +70,8 @@ namespace NEA
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
-            FirebaseApp.InitializeApp(this);
+           
+            FirebaseApp.InitializeApp(this);            
 
             //get file + camera + notification permissions
             RequestPermissions(permissionGroup, 0);
@@ -79,18 +82,7 @@ namespace NEA
             FirebasePushNotificationManager.Initialize(this, true);
             FirebasePushNotificationManager.ProcessIntent(this, Intent);
 
-            // Token event
-            CrossFirebasePushNotification.Current.OnTokenRefresh += (s, p) =>
-            {
-                System.Diagnostics.Debug.WriteLine($"TOKEN : {p.Token}");
-            };
-
-            // Push message received event
-            CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
-            {
-
-                System.Diagnostics.Debug.WriteLine("Received");
-            };
+            token = CrossFirebasePushNotification.Current.Token;
 
             //if first run, creates new user
             if (Settings.FirstRun)
@@ -100,8 +92,24 @@ namespace NEA
             }
             else
             {
-                currentUser = currentUser = CreateObject();                
+                currentUser = currentUser = CreateObject();
             }
+
+            
+            // Token event
+            CrossFirebasePushNotification.Current.OnTokenRefresh += (s, p) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"TOKEN : {p.Token}");
+                token = p.Token;
+                UpdateToken();
+            };
+
+            // Push message received event
+            CrossFirebasePushNotification.Current.OnNotificationReceived += (s, p) =>
+            {
+
+                System.Diagnostics.Debug.WriteLine("Received");
+            };
 
             //items on page
             SetContentView(Resource.Layout.activity_main);
@@ -162,6 +170,21 @@ namespace NEA
 
         }
 
+        //Update token
+        public async void UpdateToken()
+        {
+            if(currentUser != null)
+            {
+                APIRequest request = new APIRequest();
+                string success = await request.EditUser(currentUser.currentID, currentUser.currentUsername, token);
+                if (success == "")
+                {
+                    Console.WriteLine("UNSUCCESSFUL");
+                }
+            }
+        }
+
+        //Get any new pairings from database
         public async void GetNewPairings()
         {
             APIRequest request = new APIRequest();
@@ -201,7 +224,7 @@ namespace NEA
                     try
                     {
                         //gets an array of all the files in the folder of particular user
-                        string[] paths = await GetFilesInFolder($"{friend.pairingID}/{friend.userID}/");
+                        string[] paths = await GetFilesInFolder($"{friend.pairingID}/{currentUser.currentID}/");
                         
                         if(paths != null)
                         {
@@ -370,6 +393,10 @@ namespace NEA
                 UsernameAlert();
             });
             builder.Show();
+            if(token!= null)
+            {
+                UpdateToken();
+            }
         }
         protected void UsernameAlert()
         {
@@ -474,6 +501,7 @@ namespace NEA
                 var Profile = new Intent(this, typeof(ProfileActivity));
                 Profile.PutExtra("username", currentUser.currentUsername);
                 Profile.PutExtra("id", currentUser.currentID);
+                Profile.PutExtra("firebaseToken", token);
                 StartActivityForResult(Profile, 1);
             }
             else if (id == Resource.Id.nav_pairings)
@@ -491,7 +519,7 @@ namespace NEA
             return true;
         }
 
-        //For receiving data from canvas
+        //For receiving data from other activities
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);

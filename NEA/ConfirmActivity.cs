@@ -18,6 +18,7 @@ using Path = System.IO.Path;
 using Bitmap = Android.Graphics.Bitmap;
 using System.Linq;
 using Google.Cloud.Storage.V1;
+using Android.Bluetooth;
 
 namespace NEA
 {
@@ -73,16 +74,17 @@ namespace NEA
             List<CheckBox> recipientList = new List<CheckBox>();
 
             //Add radio buttons with friend usernames to radio group:
-            foreach (Friend friend in userFriends)
+            for(int i=0;i<userFriends.Count;i++)
             {
                 CheckBox cbx = new CheckBox(this);
-                cbx.Id = friend.pairingID;
-                cbx.Text = friend.name;
+                cbx.Id = i;
+                cbx.Text = userFriends[i].name;
                 cbx.TextSize = 16;
                 cbx.SetPadding(7, 7, 7, 7);
                 layout.AddView(cbx);
                 recipientList.Add(cbx);
             }
+
 
             builder.SetView(view);
             builder.SetTitle("Choose your recipient:");
@@ -111,7 +113,9 @@ namespace NEA
                     Toast.MakeText(this, "Sending...", ToastLength.Short).Show();
                     foreach(int recipient in recipients)
                     {
-                        SendImage(recipient);
+                        int uid = userFriends[recipient].userID;
+                        int pid = userFriends[recipient].pairingID;
+                        SendImage(pid, uid);
                     }
                 }
             });
@@ -123,7 +127,7 @@ namespace NEA
             dialog.Show();
         }
 
-        private async void SendImage(int pairingID)
+        private async void SendImage(int pairingID, int userID)
         {
 
             MemoryStream stream = new MemoryStream(imageArray);
@@ -132,7 +136,7 @@ namespace NEA
                 ThrowOnCancel = true
             });
             string filename = $"{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.png";
-            FirebaseStorageReference reference = storage.Child($"{pairingID}/{currentID}/{filename}");
+            FirebaseStorageReference reference = storage.Child($"{pairingID}/{userID}/{filename}");
 
             try
             {
