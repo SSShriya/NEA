@@ -127,7 +127,6 @@ namespace NEA
                 return "";
             }
             int id = GetUID();
-            Console.WriteLine($"id is {id}");
 
             //Gets the most recent file that was received by someone else
             if (id != 0)

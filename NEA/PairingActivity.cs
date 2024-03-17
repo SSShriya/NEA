@@ -55,19 +55,19 @@ namespace NEA
         public void ValidateUserID(object sender, EventArgs e)
         {
             EditText enterUID = FindViewById<EditText>(Resource.Id.enterUserID);
-            string UID = enterUID.Text;
+            string pairingUser = enterUID.Text;
             int UIDint;
-            if (UID == "")
+            if (pairingUser == "")
             {
                 Toast.MakeText(this, "Code cannot be empty", ToastLength.Short).Show();
                 return;
             }
-            else if (int.TryParse(UID, out UIDint) == false)
+            else if (int.TryParse(pairingUser, out UIDint) == false)
             {
                 Toast.MakeText(this, "Invalid code", ToastLength.Short).Show();
                 return;
             }
-            UIDint = Convert.ToInt32(UID);
+            UIDint = Convert.ToInt32(pairingUser);
             if (UIDint <= 0)
             {
                 Toast.MakeText(this, "Invalid code", ToastLength.Short).Show();

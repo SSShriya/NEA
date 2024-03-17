@@ -134,6 +134,7 @@ namespace NEA
             FirebaseStorage storage = new FirebaseStorage("nea-files-a5ba8.appspot.com", new FirebaseStorageOptions
             {
                 ThrowOnCancel = true
+                
             });
             string filename = $"{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.png";
             FirebaseStorageReference reference = storage.Child($"{pairingID}/{userID}/{filename}");

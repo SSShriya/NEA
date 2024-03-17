@@ -319,45 +319,52 @@ namespace NEA
 
             private void FloodFill(int x, int y, int oldColour, int newColour)
             {
-                if (x >= 0 && x < bitmap.Width && y >= 0 && y < bitmap.Height)
+                if(GetPixelColour(x,y) == newColour)
                 {
-                    Stack<Point> toVisit = new Stack<Point>();
-                    toVisit.Push(new Point(x, y));
-                    while (toVisit.Count > 0)
-                    {
-                        Point newPoint = toVisit.Pop();
-                        x = newPoint.X;
-                        y = newPoint.Y;
-                        if (GetPixelColour(x, y) == oldColour)
-                        {
-                            SetPixelColour(x, y, newColour);
-                            if (x < bitmap.Width - 1)
-                            {
-
-                                toVisit.Push(new Point(x + 1, y));
-
-                            }
-                            if (x > 0)
-                            {
-
-                                toVisit.Push(new Point(x - 1, y));
-
-                            }
-                            if (y < bitmap.Height - 1)
-                            {
-
-                                toVisit.Push(new Point(x, y + 1));
-
-                            }
-                            if (y > 0)
-                            {
-
-                                toVisit.Push(new Point(x, y - 1));
-
-                            }
-                        }
-                    }
+                    return;
                 }
+                Stack<Point> toVisit = new Stack<Point>();
+
+                toVisit.Push(new Point(x, y));
+               
+
+                while (toVisit.Count > 0)
+                {
+                    Point newPoint = toVisit.Pop();
+                    x = newPoint.X;
+                    y = newPoint.Y;
+                    while(y>=0 && GetPixelColour(x,y) == oldColour)
+                    {
+                        y--;
+                    }
+                    y++;
+                    bool spanLeft = false;
+                    bool spanRight = false;
+                    while(y<bitmap.Height && GetPixelColour(x, y) == oldColour)
+                    {
+                        SetPixelColour(x, y, newColour);
+                        if(!spanLeft && x>0 && GetPixelColour(x-1, y) == oldColour)
+                        {
+                            toVisit.Push(new Point(x - 1, y));
+                            spanLeft = true;
+                        }
+                        else if(spanLeft && x>0 && GetPixelColour(x-1, y) != oldColour)
+                        {
+                            spanLeft = false;
+                        }
+                        if(!spanRight && x<bitmap.Width-1 && GetPixelColour(x+1, y) == oldColour)
+                        {
+                            toVisit.Push(new Point(x + 1, y));
+                            spanRight = true;
+                        }
+                        else if(spanRight && x<bitmap.Width-1 && GetPixelColour(x+1, y) != oldColour)
+                        {
+                            spanRight = false;
+                        }
+                        y++;
+                    }               
+                }
+                return;
             }
 
             //Undo
