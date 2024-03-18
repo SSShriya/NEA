@@ -46,6 +46,8 @@ using Resource = NEA.Resource;
 using System.Linq;
 using FirebaseAdmin;
 using FirebaseApp = Firebase.FirebaseApp;
+using AndroidX.Work;
+using Android.Util;
 
 
 
@@ -81,6 +83,10 @@ namespace NEA
             FirebasePushNotificationManager.DefaultNotificationChannelName = "ImageAvailable";
             FirebasePushNotificationManager.Initialize(this, true);
             FirebasePushNotificationManager.ProcessIntent(this, Intent);
+
+            //use emulator UNCOMMENT THISSSSSSSSSSSS
+            //FirebaseStorage storage = FirebaseStorage.Instance();
+            //storage.UseEmulator("10.0.2.2", 9199);
 
             token = CrossFirebasePushNotification.Current.Token;
 
@@ -168,6 +174,10 @@ namespace NEA
                 download.DownloadImage();
 
             }
+
+            //BG task
+            PeriodicWorkRequest downloadRequest = PeriodicWorkRequest.Builder.From<BackgroundDownload>(TimeSpan.FromHours(1)).Build();
+            WorkManager.GetInstance(Application.ApplicationContext).EnqueueUniquePeriodicWork("download", ExistingPeriodicWorkPolicy.Keep, downloadRequest);
 
         }
 

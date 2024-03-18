@@ -34,7 +34,7 @@ namespace NEA
             {
                 int appWidgetId = appWidgetIds[i];
                 Intent intent = new Intent(context, typeof(Widget));
-                intent.AddFlags(ActivityFlags.GrantReadUriPermission);
+                intent.AddFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.NewTask | ActivityFlags.MultipleTask);
                 intent.SetAction("Clicked");
                 PendingIntent imageBG = PendingIntent.GetBroadcast(context, 0, intent, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
 
@@ -103,6 +103,7 @@ namespace NEA
             {
                 StreamReader reader = new StreamReader(filePath);
                 int id = Convert.ToInt32(reader.ReadLine());
+                reader.Close();
                 return id;
             }
             else
