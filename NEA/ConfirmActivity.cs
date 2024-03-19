@@ -74,6 +74,11 @@ namespace NEA
             List<CheckBox> recipientList = new List<CheckBox>();
 
             //Add radio buttons with friend usernames to radio group:
+            if(userFriends.Count ==0)
+            {
+                Toast.MakeText(this, "You have no pairings yet", ToastLength.Short).Show();
+                return;
+            }
             for(int i=0;i<userFriends.Count;i++)
             {
                 CheckBox cbx = new CheckBox(this);

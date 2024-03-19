@@ -27,16 +27,16 @@ namespace NEA
         private string url = "https://10.0.2.2:7123/";
 
         //POST request to create user on first run
-        public async Task<string> AddUser(string username)
+        public async Task<string> AddUser(string username, string firebaseToken)
         {
             //creates http client
             HttpClientHandler handler = new HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
             HttpClient client = new HttpClient(handler);
             client.BaseAddress = new Uri(url);
-            
+
             //creates data to put in body of request
-            string data = $"\"{username}\"";
+            string data = $"{{\"uName\": \"{username}\",\"firebaseToken\": \"{firebaseToken}\"}}";
             byte[] messageBytes = Encoding.UTF8.GetBytes(data);
             var content = new ByteArrayContent(messageBytes);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");

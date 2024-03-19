@@ -94,7 +94,6 @@ namespace NEA
             if (Settings.FirstRun)
             {
                 FirstRun();
-                Settings.FirstRun = false;
             }
             else
             {
@@ -323,7 +322,7 @@ namespace NEA
                 {
                     Toast.MakeText(this, "Creating your user!", ToastLength.Short).Show();
                     var inputUsername = editText.Text.ToString();
-                    CreateUser(inputUsername);
+                    CreateUser(inputUsername, token);
                 }
             });
             dialog = builder.Create();
@@ -331,10 +330,10 @@ namespace NEA
         }
 
         //Creating a User by requesting API
-        protected async void CreateUser(string username)
+        protected async void CreateUser(string username, string firebaseToken)
         {
             APIRequest request = new APIRequest();
-            string userID = await request.AddUser(username);
+            string userID = await request.AddUser(username, firebaseToken);
             if(userID == "")
             {
                 Toast.MakeText(this, "User creation unsuccessful.", ToastLength.Short).Show();
@@ -357,6 +356,7 @@ namespace NEA
                 writer.Close();
 
                 currentUser = CreateObject();
+                Settings.FirstRun = false;
             }
         }
 
